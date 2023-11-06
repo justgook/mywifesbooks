@@ -3,6 +3,9 @@ defaultContentLanguage: ru
 languageCode: ru
 title: "Книжная Полка"
 Params:
+  twitterImage: "/i/3.jpg"
+  twitterSite: "@DeadRaaat"
+  image: "/i/4.jpg"
   description: >-
     Погрузитесь в мир увлекательных историй и знаний на нашей тщательно
     подобранной книжной полке. Откройте разнообразную коллекцию книг, от вечных

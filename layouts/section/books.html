@@ -1,0 +1,12 @@
+{{ define "main" }}
+  {{ partial "tags-buttons.html" . }}
+  {{ .Content }}
+      <ul class=" p-2 flex flex-row gap-2 items-stretch ">
+        {{ range .Paginator.Pages }}
+        <li class="flex ">
+              {{ .Render "summary" }}
+          </li>
+        {{ end }}
+      </ul>
+{{ end }}
+

@@ -1,6 +1,7 @@
 baseURL: /
 defaultContentLanguage: ru
 languageCode: ru
+sectionPagesMenu: main
 title: "Книжная Полка"
 Params:
   twitterImage: "/i/3.jpg"
@@ -18,14 +19,13 @@ Params:
 taxonomies:
   series: series
   tag: tags
-  author: author
+  author: authors
+  genre: genres
+
 imaging:
   exif:
     disableDate: false
     disableLatLong: false
     excludeFields: ''
     includeFields: ''
-module:
-  mounts:
-    - source: partials
-      target: content
+

@@ -1,5 +1,5 @@
 {{ define "main" }}
-<section class="bg-white dark:bg-gray-900">
+<section>
     <div class="gap-16 items-center pb-8 px-4 mx-auto max-w-screen-xl lg:grid lg:grid-cols-2 lg:pb-16 lg:px-6">
         <div class="font-light text-gray-500 sm:text-lg dark:text-gray-400">
             <h2 class="mb-4 text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white">{{ .Title }}</h2>
@@ -26,8 +26,21 @@
             />
         </div>
     </div>
-</section>
-{{ range site.RegularPages }}
-{{.Render "summary"}}
+<article class="pb-8 px-4 mx-auto max-w-screen-xl lg:pb-16 lg:px-6">
+          {{$section_heading := .Site.GetPage "section" "books" }}
+{{with $section_heading}}
+            <h2 class="mb-4 text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white">
+              <a href="{{ .Permalink }}">
+              {{ .Title }}
+              </a>
+            </h2>
+{{end}}
+<section class="flex gap-4 flex-wrap justify-center">
+{{ range first 2 (where site.RegularPages.ByLastmod.Reverse "Section" "books" ) }}
+        {{ .Render "summary" }}
+      {{ end }}
+      </section>
+</article>
+
 {{ end }}
-{{ end }}
+

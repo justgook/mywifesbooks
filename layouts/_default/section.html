@@ -9,13 +9,10 @@
     {{ .Content }}
       <ul class="contents">
         {{ range .Paginator.Pages }}
-          <li>{{ .Title }}
-            <div>
-              {{ partial "summary.html" . }}
-            </div>
+        <li><a class="text-primary-400" href="{{ .Permalink }}"> {{ .Title }}</a>
           </li>
         {{ end }}
       </ul>
-    {{ partial "pagination.html" . }}
   </main>
 {{ end }}
+

@@ -20,7 +20,7 @@ taxonomies:
   series: series
   tag: tags
   author: authors
-  genre: genres
+  genre: genre
 
 imaging:
   exif:

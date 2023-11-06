@@ -1,27 +1,20 @@
 <!DOCTYPE html>
-<html lang="{{ or site.Language.LanguageCode site.Language.Lang }}" dir="{{ or site.Language.LanguageDirection `ltr` }}">
+<html lang="{{ or site.Language.LanguageCode site.Language.Lang }}"
+      dir="{{ or site.Language.LanguageDirection `ltr` }}">
 <head>
-  {{ partial "head.html" . }}
+    {{ partial "head.html" . }}
 </head>
-  <body
-      class="antialiased text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900"
-    >
-    <header class="mx-auto w-full max-w-2xl format format-sm sm:format-base lg:format-lg format-blue dark:format-invert">
 
-  {{ partial "breadcrumb.html" . }}
-</header>
-<main class="pt-8 pb-16 lg:pt-16 lg:pb-24 bg-white dark:bg-gray-900 antialiased">
-  <div class="flex justify-between px-4 mx-auto max-w-screen-xl ">
-          <article class="mx-auto w-full max-w-2xl format format-sm sm:format-base lg:format-lg format-blue dark:format-invert">
+<body
+        class="antialiased text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900"
+>
+{{ partial "header.html" . }}
 
-  {{ block "main" . }}
-  {{ end }}
-  </article>
-
-  </div>
-</main>
-    {{ block "footer" . }}
+<main class="pb-16 lg:pb-24 bg-white dark:bg-gray-900 antialiased">
+    {{ block "main" . }}
     {{ end }}
-  </body>
+</main>
+{{ block "footer" . }}
+{{ end }}
+</body>
 </html>
-

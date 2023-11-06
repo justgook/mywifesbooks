@@ -1,7 +1,33 @@
 {{ define "main" }}
-  {{ .Content }}
-  {{ range site.RegularPages }}
-  {{.Render "summary"}}
-  {{ end }}
+<section class="bg-white dark:bg-gray-900">
+    <div class="gap-16 items-center pb-8 px-4 mx-auto max-w-screen-xl lg:grid lg:grid-cols-2 lg:pb-16 lg:px-6">
+        <div class="font-light text-gray-500 sm:text-lg dark:text-gray-400">
+            <h2 class="mb-4 text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white">{{ .Title }}</h2>
+            <article class="prose md:prose-lg lg:prose-xl dark:prose-invert">
+                {{ .Content }}
+            </article>
+        </div>
+        <div class="grid grid-cols-2 gap-4 mt-8">
+            {{ $image1 := resources.Get "/i/3.jpg" }}
+            {{ $image1 = $image1.Fill "490x650 q90"}}
+            {{ $image2 := resources.Get "/i/4.jpg" }}
+            {{ $image2 = $image2.Fill "490x650 q90"}}
+            <img
+                    src="{{ $image1.RelPermalink }}"
+                    width="{{ $image1.Width }}"
+                    height="{{ $image1.Height }}"
+                    class="w-full rounded-lg"
+            />
+            <img
+                    src="{{ $image2.RelPermalink }}"
+                    width="{{ $image2.Width }}"
+                    height="{{ $image2.Height }}"
+                    class="mt-4 w-full lg:mt-10 rounded-lg"
+            />
+        </div>
+    </div>
+</section>
+{{ range site.RegularPages }}
+{{.Render "summary"}}
 {{ end }}
-
+{{ end }}

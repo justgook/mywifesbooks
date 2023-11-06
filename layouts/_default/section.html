@@ -1,6 +1,11 @@
 {{ define "main" }}
   <main>
-    dasdasda
+    IM SECTION!!!
+      <br>
+      <br>
+      <br>
+      <br>
+      {{ partial "breadcrumb.html" . }}
     {{ .Content }}
       <ul class="contents">
         {{ range .Paginator.Pages }}
@@ -14,4 +19,3 @@
     {{ partial "pagination.html" . }}
   </main>
 {{ end }}
-

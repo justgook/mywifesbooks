@@ -1,4 +1,7 @@
 {{ define "main" }}
+<header class="mx-auto w-full max-w-2xl format format-sm sm:format-base lg:format-lg format-blue dark:format-invert">
+    {{ partial "breadcrumb.html" . }}
+</header>
   {{ partial "tags-buttons.html" . }}
   {{ .Content }}
       <ul class=" p-2 flex flex-row gap-2 items-stretch ">
@@ -9,4 +12,3 @@
         {{ end }}
       </ul>
 {{ end }}
-

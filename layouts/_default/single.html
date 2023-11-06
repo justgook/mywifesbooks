@@ -1,11 +1,6 @@
 {{ define "main" }}
-  <h1>{{ .Title }}</h1>
-
-  {{ $dateMachine := .Date | time.Format "2006-01-02T15:04:05-07:00" }}
-  {{ $dateHuman := .Date | time.Format ":date_long" }}
-  <time datetime="{{ $dateMachine }}">{{ $dateHuman }}</time>
+  <h1 class="mb-4 text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white">{{ .Title }}</h1>
 <article class="prose md:prose-lg lg:prose-xl dark:prose-invert">
   {{ .Content }}
   </article>
 {{ end }}
-

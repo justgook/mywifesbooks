@@ -1,26 +1,39 @@
 local_backend:
-  # when using a custom proxy server port
-  # url: http://localhost:8081/api/v1
-  # when accessing the local site from a host other than 'localhost' or '127.0.0.1'
   allowed_hosts: ['10.10.10.177']
 backend:
   name: git-gateway
   branch: main
+locale: 'ru'
 media_folder: /assets/img
 public_folder: /img
 collections:
+  - name: "genre"
+    label: "Жанр"
+    folder: "content/genre"
+    create: true
+    slug: "{{title}}"
+    fields:
+      - { label: 'Жанр', name: 'title', widget: 'string' }
+      - { label: 'Описание', name: 'body', widget: 'markdown', default: " " }
   - name: "books"
-    label: "Books"
+    label: "Книга"
     folder: "content/books"
     create: true
     slug: "{{title}}"
     eidtor: false
     fields:
-      - { label: 'Title', name: 'title', widget: 'string' }
-      - { label: 'Author', name: 'author', widget: 'string', default: "неизвестный" }
-      - { label: 'Series', name: 'series', widget: 'string', default: "самостоятельный роман" }
+      - { label: 'Заголовок', name: 'title', widget: 'string' }
+      - { label: 'Автор', name: 'author', widget: 'string', default: "неизвестный" }
+      - label: "Жанр"
+        name: "genre"
+        widget: "relation"
+        collection: "genre"
+        search_fields: ['title']
+        value_field: "{{slug}}"
+        display_fields: ["{{title}}"]
+      - { label: 'Цикл', name: 'series', widget: 'string', default: "самостоятельный роман" }
       - { label: "Tags", name: "tags", widget: "list", default: ["18+"] }
-      - label: "Image"
+      - label: "Обложка"
         name: "image"
         widget: "image"
         allow_multiple: false
@@ -29,6 +42,6 @@ collections:
         media_library:
           config:
             multiple: false
-      - { label: "Already Have", name: "have", widget: "boolean", default: true}
-      - { label: 'Body', name: 'body', widget: 'markdown' }
+      - { label: "Уже есть", name: "have", widget: "boolean", default: true}
+      - { label: 'Описание', name: 'body', widget: 'markdown' }
 

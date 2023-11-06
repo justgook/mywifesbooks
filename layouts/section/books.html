@@ -3,12 +3,17 @@
     {{ partial "breadcrumb.html" . }}
 </header>
   {{ partial "tags-buttons.html" . }}
+<article class="prose md:prose-lg lg:prose-xl dark:prose-invert">
   {{ .Content }}
-      <ul class=" p-2 flex flex-row gap-2 items-stretch ">
+  </article>
+<section class="flex gap-4 flex-wrap justify-center">
         {{ range .Paginator.Pages }}
-        <li class="flex ">
               {{ .Render "summary" }}
-          </li>
         {{ end }}
-      </ul>
+
+      </section>
+
+      <div class="flex justify-center p-8 [&_.page-item.active]:text-primary-400 [&_.pagination]:gap-2 [&_.pagination]:flex [&_.page-item]:h-10 [&_.page-item]:w-10 [&_.page-item]:flex [&_.page-item]:items-center [&_.page-item]:justify-center [&_.page-item]:border [&_.page-item]:border-gray-600 [&_.page-item]:rounded  ">
+              {{ template "_internal/pagination.html" . }}
+      </div>
 {{ end }}

@@ -1,20 +1,31 @@
 <!DOCTYPE html>
 <html lang="{{ or site.Language.LanguageCode site.Language.Lang }}"
-      dir="{{ or site.Language.LanguageDirection `ltr` }}">
+      dir="{{ or site.Language.LanguageDirection `ltr` }}"
+              >
 <head>
     {{ partial "head.html" . }}
 </head>
 
 <body
         class="antialiased text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900"
+        hx-boost="true"
+        hx-indicator="body"
 >
+<div
+    class="contents"
+    id="maga-wrapper"
+    hx-target="this"
+    hx-ext="alpine-morph"
+    hx-swap="morph"
+  >
 {{ partial "header.html" . }}
-
 <main class="pb-16 lg:pb-24 bg-white dark:bg-gray-900 antialiased">
     {{ block "main" . }}
     {{ end }}
 </main>
 {{ block "footer" . }}
 {{ end }}
+</div>
 </body>
 </html>
+

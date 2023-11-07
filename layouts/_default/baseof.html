@@ -8,8 +8,6 @@
 
 <body
         class="antialiased text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900"
-        hx-boost="true"
-        hx-indicator="body"
 >
 <div
     class="contents"
@@ -17,9 +15,12 @@
     hx-target="this"
     hx-ext="alpine-morph"
     hx-swap="morph"
+    hx-boost="true"
+    hx-indicator="body"
   >
 {{ partial "header.html" . }}
-<main class="pb-16 lg:pb-24 bg-white dark:bg-gray-900 antialiased">
+<main
+  class="pb-16 lg:pb-24 bg-white dark:bg-gray-900 antialiased">
     {{ block "main" . }}
     {{ end }}
 </main>

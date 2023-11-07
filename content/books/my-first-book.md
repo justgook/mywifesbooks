@@ -1,10 +1,11 @@
 ---
 title: Королевство шипов и роз
 author: Сара Дж. Маас
+genre: Фэнтези
 series: Королевство шипов и роз
 tags:
   - 18+
-  - fantasy
+  - фэнтези
 image: /img/hghh.jpeg
 have: true
 ---

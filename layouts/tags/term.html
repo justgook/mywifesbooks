@@ -11,9 +11,9 @@
               {{ .Render "summary" }}
         {{ end }}
       </section>
-      <div class="flex justify-center p-8 [&_.page-item.active]:text-primary-400 [&_.pagination]:gap-2 [&_.pagination]:flex [&_.page-item]:h-10 [&_.page-item]:w-10 [&_.page-item]:flex [&_.page-item]:items-center [&_.page-item]:justify-center [&_.page-item]:border [&_.page-item]:border-gray-600 [&_.page-item]:rounded  ">
-              {{ template "_internal/pagination.html" . }}
-      </div>
+
+{{ partial "pagination.html" . }}
+
 </article>
 {{ end }}
 

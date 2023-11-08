@@ -1,8 +1,8 @@
 {{ $time := now }}
 {{ $styles := resources.Get "css/styles.scss"
-    | toCSS
-    | postCSS (dict "config" "./assets/css/postcss.config.js")
-    | resources.ExecuteAsTemplate (printf "styles.%s.css" $time) $time
+| toCSS
+| postCSS (dict "config" "./assets/css/postcss.config.js")
+| resources.ExecuteAsTemplate (printf "styles.%s.css" $time) $time
 }}
 {{ if .Site.IsServer }}
     <link rel="stylesheet" href="{{ $styles.RelPermalink }}">
@@ -10,4 +10,3 @@
     {{ $styles := $styles | minify | fingerprint | resources.PostCSS }}
     <link rel="stylesheet" href="{{ $styles.RelPermalink }}">
 {{ end }}
-

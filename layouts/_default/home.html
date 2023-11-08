@@ -26,21 +26,20 @@
             />
         </div>
     </div>
-<article class="pb-8 px-4 mx-auto max-w-screen-xl lg:pb-16 lg:px-6">
-          {{$section_heading := .Site.GetPage "section" "books" }}
-{{with $section_heading}}
+    <article class="pb-8 px-4 mx-auto max-w-screen-xl lg:pb-16 lg:px-6">
+        {{$section_heading := .Site.GetPage "section" "books" }}
+        {{with $section_heading}}
             <h2 class="mb-4 text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white">
-              <a href="{{ .Permalink }}">
-              {{ .Title }}
-              </a>
+                <a href="{{ .Permalink }}">
+                    {{ .Title }}
+                </a>
             </h2>
-{{end}}
-<section class="flex gap-4 flex-wrap justify-center">
-{{ range first 2 (where site.RegularPages.ByLastmod.Reverse "Section" "books" ) }}
-        {{ .Render "summary" }}
-      {{ end }}
-      </section>
-</article>
+        {{end}}
+        <section class="flex gap-4 flex-wrap justify-center">
+            {{ range first 2 (where site.RegularPages.ByLastmod.Reverse "Section" "books" ) }}
+                {{ .Render "summary" }}
+            {{ end }}
+        </section>
+    </article>
 
-{{ end }}
-
+    {{ end }}

@@ -28,3 +28,17 @@ imaging:
     disableLatLong: false
     excludeFields: ''
     includeFields: ''
+
+outputs:
+  home:
+    - html
+    - rss
+    - json
+    - svg
+mediaTypes:
+  image/svg+xml:
+    suffixes:
+      - svg
+outputFormats:
+  svg:
+    mediaType: image/svg+xml

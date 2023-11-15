@@ -1,7 +1,5 @@
 {{ define "main" }}
     {{ partial "breadcrumb.html" . }}
-
-
     <article class="pb-8 px-4 mx-auto max-w-screen-xl lg:pb-16 lg:px-6">
         <h1 class="mb-4 text-4xl tracking-tight text-center font-extrabold text-gray-900 dark:text-white">
             {{ .Title }}
@@ -10,7 +8,6 @@
             {{ range .Paginator.Pages }}
                 {{ .Render "summary" }}
             {{ end }}
-
         </section>
         {{ partial "pagination.html" . }}
     </article>

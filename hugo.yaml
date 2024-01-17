@@ -3,6 +3,9 @@ defaultContentLanguage: ru
 languageCode: ru
 sectionPagesMenu: main
 title: "Книжная Полка"
+services:
+  googleAnalytics:
+    ID: G-FQB2L8KWNV
 Params:
   twitterImage: "/i/3.jpg"
   twitterSite: "@DeadRaaat"
@@ -42,3 +45,4 @@ mediaTypes:
 outputFormats:
   svg:
     mediaType: image/svg+xml
+

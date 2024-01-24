@@ -2,10 +2,11 @@
     {{ partial "breadcrumb.html" . }}
     <article class="pb-8 px-4 mx-auto max-w-screen-xl lg:pb-16 lg:px-6">
         <h1 class="mb-4 text-4xl tracking-tight text-center font-extrabold text-gray-900 dark:text-white">
-            {{ .Title }}
+           term {{ .Title }}
         </h1>
         <section class="flex gap-4 flex-wrap justify-center">
-{{ range .Paginator.Pages }}
+{{ $paginator := (.Paginator 5) }}
+{{ range $paginator.Pages }}
                 {{ .Render "summary" }}
             {{ end }}
         </section>

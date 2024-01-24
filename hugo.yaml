@@ -1,4 +1,5 @@
 baseURL: /
+paginate: 25
 defaultContentLanguage: ru
 languageCode: ru
 sectionPagesMenu: main
@@ -19,10 +20,11 @@ Params:
     случайным читателем или библиофилом, наш виртуальный мир книг предлагает
     что-то для каждого любителя книг. Начните свое следующее приключение с
     чтением у нас!
+
 taxonomies:
   series: series
   tag: tags
-  author: authors
+  author: author
   genre: genre
 
 imaging:

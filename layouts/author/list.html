@@ -4,8 +4,9 @@
         <h1 class="mb-4 text-4xl tracking-tight text-center font-extrabold text-gray-900 dark:text-white">
             {{ .Title }}
         </h1>
-        <section class="flex gap-4 flex-wrap justify-center">
-{{ range .Paginator.Pages }}
+        <section class="columns-3xs">
+{{ $paginator := (.Paginator 5) }}
+{{ range $paginator.Pages }}
                 {{ .Render "summary" }}
             {{ end }}
         </section>

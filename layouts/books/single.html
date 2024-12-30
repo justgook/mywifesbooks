@@ -1,15 +1,25 @@
 {{ define "main" }}
-    {{ partial "breadcrumb.html" . }}
-    <div class="pb-8 px-4 mx-auto max-w-screen-xl lg:pb-16 lg:px-6">
-        <span class="text-sm text-gray-500 dark:text-gray-400">{{.Params.author}}</span>
-        <h1 class="mb-4 text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white">
-            {{ .Title }}
-        </h1>
-        {{ partial "terms.html" (dict "taxonomy" "genre" "page" .) }}
-        {{ partial "terms.html" (dict "taxonomy" "tags" "page" .) }}
-        {{ partial "terms.html" (dict "taxonomy" "series" "page" .) }}
+{{ partial "breadcrumb.html" . }}
+<div class="pb-8 px-4 mx-auto max-w-screen-xl lg:pb-16 lg:px-6">
+    <span class="text-sm text-gray-500 dark:text-gray-400">{{.Params.author}}</span>
+    <h1 class="mb-4 text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white">
+        {{ .Title }}
+    </h1>
+    {{ partial "terms.html" (dict "taxonomy" "genre" "page" .) }}
+    {{ partial "terms.html" (dict "taxonomy" "tags" "page" .) }}
+    {{ partial "terms.html" (dict "taxonomy" "series" "page" .) }}
+    <div class="grid md:grid-cols-2 gap-4 pt-4">
+        <div>
+            {{ $image := resources.Get .Params.image }}
+            {{if $image}}
+            <img src="{{ $image.RelPermalink }}" width="{{ $image.Width }}" height="{{ $image.Height }}"
+                class="object-cover w-full rounded-lg md:rounded-l-lg">
+            {{end}}
+        </div>
         <article class="prose md:prose-lg lg:prose-xl dark:prose-invert">
+
             {{ .Content }}
         </article>
     </div>
+</div>
 {{end}}

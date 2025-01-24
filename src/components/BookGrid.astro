@@ -1,5 +1,5 @@
 ---
-import { Picture } from 'astro:assets';
+import { Image } from 'astro:assets';
 const { books = [], currentPage = 1, totalPages = 1 } = Astro.props;
 
 const getPageNumbers = () => {
@@ -39,11 +39,9 @@ const getPageNumbers = () => {
     {books.length > 0 ? books.map(book => (
       <a href={`/books/${book.slug}`} class="block group relative">
         <div class="aspect-[1/1.4] relative overflow-hidden">
-              <Picture
+              <Image
             src={book.data.image}
             alt={book.data.title}
-            formats={['avif', 'webp']}
-            widths={[240, 540, 720, book.data.image.width]}
             class="absolute inset-0 w-full h-full object-cover"
           />
           <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300">

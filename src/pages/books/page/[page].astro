@@ -1,0 +1,27 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import BookGrid from '../../../components/BookGrid.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const pageSize = 12;
+  const allBooks = await getCollection('books');
+  const totalPages = Math.ceil(allBooks.length / pageSize);
+  return Array.from({ length: totalPages }, (_, i) => ({
+    params: { page: (i + 1).toString() },
+    props: {
+      books: allBooks.slice(i * pageSize, (i + 1) * pageSize),
+      currentPage: i + 1,
+      totalPages
+    }
+  }));
+}
+
+const { page } = Astro.params;
+const currentPage = parseInt(page);
+const { books, totalPages } = Astro.props;
+---
+
+<BaseLayout title={`All Books - Page ${currentPage}`}>
+  <BookGrid books={books} currentPage={currentPage} totalPages={totalPages} />
+</BaseLayout>

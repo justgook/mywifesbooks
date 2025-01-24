@@ -1,0 +1,26 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BookGrid from '../../components/BookGrid.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const books = await getCollection('books');
+  const tagsSet =  new Set(books.flatMap(book => book.data.tags))
+  tagsSet.delete("")
+  const tags = [...tagsSet]
+  return tags.map(tag => ({
+    params: { tag },
+    props: { tag }
+  }));
+}
+
+const { tag } = Astro.params;
+const books = await getCollection('books').then(books => 
+  books.filter(book => book.data.tags.includes(tag))
+);
+---
+
+<BaseLayout title={`Тэг "${tag}"`}>
+  <h1 class="text-3xl font-bold mb-8">Тэг "{tag}"</h1>
+  <BookGrid books={books} />
+</BaseLayout>

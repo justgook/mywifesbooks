@@ -1,0 +1,115 @@
+---
+import { Image } from 'astro:assets';
+const { books = [], currentPage = 1, totalPages = 1 } = Astro.props;
+
+const getPageNumbers = () => {
+  const pages = [];
+  const maxVisible = 5; // Number of pages to show around current
+  const sidePages = Math.floor(maxVisible / 2);
+  let startPage = Math.max(1, currentPage - sidePages);
+  let endPage = Math.min(totalPages, currentPage + sidePages);
+
+  // Add first page and possible ellipsis
+  if (startPage > 1) {
+    pages.push(1);
+    if (startPage > 2) {
+      pages.push('...');
+    }
+  }
+
+  // Add middle pages
+  for (let i = startPage; i <= endPage; i++) {
+    pages.push(i);
+  }
+
+  // Add possible ellipsis and last page
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) {
+      pages.push('...');
+    }
+    pages.push(totalPages);
+  }
+
+  return pages;
+};
+---
+
+<div class="space-y-8">
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+    {books.length > 0 ? books.map(book => (
+      <a href={`/books/${book.slug}`} class="block group relative">
+        <div class="aspect-[1/1.4] relative overflow-hidden">
+              <Image
+            src={book.data.image}
+            alt={book.data.title}
+            class="absolute inset-0 w-full h-full object-cover"
+          />
+          <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+              <h2 class="text-lg font-bold text-white">{book.data.title}</h2>
+              <p class="text-gray-200 text-sm">{book.data.author}</p>
+              <div class="flex flex-wrap gap-1 mt-1">
+                {book.data.tags.map(tag => (
+                  <span class="bg-gray-800/80 text-gray-200 text-xs font-medium px-2 py-0.5 rounded">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+              {book.data.have && (
+                <span class="absolute top-2 right-2 bg-green-500 text-white text-xs font-medium px-2 py-0.5 rounded">
+                  Read
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      </a>
+    )) : <p class="text-center text-gray-500">No books found</p>}
+  </div>
+  {totalPages > 1 && (
+    <div class="flex justify-center gap-1 md:gap-2 flex-wrap">
+      {currentPage > 1 && (
+        <a
+          href={`/books/page/${currentPage - 1}`}
+          class="px-3 py-2 md:px-4 md:py-2 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
+          aria-label="Previous Page"
+        >
+          &laquo;
+        </a>
+      )}
+
+      {getPageNumbers().map((page) => (
+        typeof page === 'number' ? (
+          <a
+            href={`/books/page/${page}`}
+            class={`px-3 py-1 md:px-4 md:py-2 rounded ${
+              page === currentPage
+                ? 'bg-blue-500 text-white'
+                : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
+            }`}
+            aria-label={`Page ${page}`}
+          >
+            {page}
+          </a>
+        ) : (
+          <span
+            class="px-3 py-1 md:px-4 md:py-2 text-gray-500"
+            aria-hidden="true"
+          >
+            {page}
+          </span>
+        )
+      ))}
+
+      {currentPage < totalPages && (
+        <a
+          href={`/books/page/${currentPage + 1}`}
+          class="px-3 py-2 md:px-4 md:py-2 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
+          aria-label="Next Page"
+        >
+          &raquo;
+        </a>
+      )}
+    </div>
+  )}
+</div>

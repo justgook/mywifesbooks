@@ -1,0 +1,21 @@
+---
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const allBooks = await getCollection('books');
+  const firstPageBooks = allBooks.slice(0, 9);
+  
+  return [{
+    params: { page: undefined },
+    props: { 
+      books: firstPageBooks, 
+      currentPage: 1, 
+      totalPages: Math.ceil(allBooks.length / 9) 
+    }
+  }];
+}
+
+const { books, currentPage, totalPages } = Astro.props;
+---
+
+<meta http-equiv="refresh" content={`0;url=/books/page/1`} />

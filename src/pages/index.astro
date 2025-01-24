@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BookGrid from '../components/BookGrid.astro';
+import { getCollection } from 'astro:content';
+
+const allBooks = await getCollection('books');
+const sortedBooks = allBooks.sort((a, b) =>
+  new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime()
+);
+const latestBooks = sortedBooks.slice(0, 6);
+---
+
+<BaseLayout title="Book Collection">
+  <BookGrid books={latestBooks} />
+</BaseLayout>

@@ -2,6 +2,8 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
+import createSlug from "../../lib/createSlug";
+
 const books = await getCollection('books');
 const authors = [...new Set(books.map(book => book.data.author))].sort();
 ---
@@ -11,7 +13,10 @@ const authors = [...new Set(books.map(book => book.data.author))].sort();
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     {authors.map(author => (
       <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-200">
-        <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">{author}</h2>
+      <a
+         href={`/authors/${createSlug(author)}`}
+         class="text-xl font-bold text-gray-900 dark:text-gray-100 hover:text-blue-500 dark:hover:text-blue-400"
+      >{author}</h2>
         <div class="mt-4">
           {books
             .filter(book => book.data.author === author)

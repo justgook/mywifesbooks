@@ -4,10 +4,22 @@ import BookGrid from '../components/BookGrid.astro';
 import { getCollection } from 'astro:content';
 
 const allBooks = await getCollection('books');
-const sortedBooks = allBooks.sort((a, b) =>
-  new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime()
-);
-const latestBooks = sortedBooks.slice(0, 6);
+const byDate = []
+for (const i in allBooks) {
+  byDate.push({
+    date: new Date((await allBooks[0].render()).remarkPluginFrontmatter.lastModified),
+    data: allBooks[i],
+  })
+}
+
+const sortedBooks = byDate.sort((a, b) =>{
+  return a.date.getTime() - b.date.getTime()
+});
+
+const latestBooks = [];
+for (let i=0; i < 6; i++) {
+  latestBooks.push(sortedBooks[i].data)
+}
 ---
 
 <BaseLayout title="Book Collection">

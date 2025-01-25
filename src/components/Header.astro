@@ -5,10 +5,10 @@ import logo from "../assets/logo.svg"
 
 import SearchBar from './SearchBar.astro';
 const links = [
-  { href: '/books', text: 'Книги' },
-  { href: '/authors', text: 'Авторы' },
-  { href: '/tags', text: 'Тэги' },
-  { href: '/about', text: 'Обо мне' },
+  { href: '/books', text: 'книги' },
+  { href: '/authors', text: 'авторы' },
+  { href: '/tags', text: 'тэги' },
+  { href: '/about', text: 'обо мне' },
 ];
 ---
 
@@ -25,7 +25,7 @@ const links = [
         </button>
              <a href="/" class="min-w-0 flex flex-row">
               <Image class="h-9 w-12" src={logo} format="svg" alt="" loading="lazy" />
-                <span class="text-2xl font-semibold whitespace-nowrap dark:text-white truncate">Книжная Полка</span>
+                <span class="text-5xl whitespace-nowrap dark:text-white truncate font-great-vibes">Книжная Полка</span>
             </a>
       </div>
 
@@ -33,7 +33,7 @@ const links = [
         {links.map(link => (
           <a
             href={link.href}
-            class="text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400"
+            class="text-4xl text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 font-great-vibes"
           >
             {link.text}
           </a>

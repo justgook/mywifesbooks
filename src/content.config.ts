@@ -7,7 +7,7 @@ const booksCollection = defineCollection({
     genre: z.string(),
     series: z.string(),
     tags: z.array(z.string()),
-    image: image()
+    image: image(),
   }),
 });
 

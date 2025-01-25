@@ -4,7 +4,7 @@ backend:
   name: git-gateway
   branch: main
 locale: "ru"
-media_folder: /src/assets/img
+media_folder: src/assets/img
 public_folder: /src/assets/img
 collections:
   - name: "genre"
@@ -50,7 +50,7 @@ collections:
         widget: "image"
         allow_multiple: false
         choose_url: true
-        default: "/sobor.jpeg"
+        default: "/src/assets/img/sobor.jpeg"
         media_library:
           config:
             multiple: false

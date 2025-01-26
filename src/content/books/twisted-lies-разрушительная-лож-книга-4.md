@@ -1,6 +1,6 @@
 ---
 title: Twisted lies. Разрушительная лож. Книга 4
-author: Ана Хуанг
+author: Ана Хуан
 genre: Любовный роман
 series: Twisted
 tags:

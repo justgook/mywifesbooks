@@ -4,7 +4,7 @@ author: Евгения Сафонова
 genre: Фэнтези
 series: Некроманс
 tags:
-  - 18+
+  - 16+
   - фэнтези
 image: /src/assets/img/cover1__w820-231.jpg
 have: true

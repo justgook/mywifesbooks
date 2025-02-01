@@ -1,0 +1,35 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BookGrid from '../../components/BookGrid.astro';
+import { getCollection } from 'astro:content';
+import createSlug from "../../lib/createSlug";
+
+
+export async function getStaticPaths() {
+  const books = await getCollection('books');
+  const seriesSet =  new Set(books.flatMap(book => createSlug(book.data.series)))
+  seriesSet.delete("")
+  const series = [...seriesSet]
+  return series.map(series => ({
+    params: { series },
+    props: { series }
+  }));
+}
+
+const { series } = Astro.params;
+let title = series
+const books = await getCollection('books').then(books => 
+  books.filter(book => { 
+    if (createSlug(book.data.series) === series) {
+      title = book.data.series
+      return true
+    }
+      return false
+    })
+);
+---
+
+<BaseLayout title={title}>
+  <h1 class="text-3xl font-bold mb-8">{title}</h1>
+  <BookGrid books={books} />
+</BaseLayout>

@@ -38,11 +38,17 @@ if (!book) {
       {/* Book Details */}
       <div class="lg:w-2/3 xl:w-3/4 mt-8 lg:mt-0">
         <h1 class="text-3xl font-bold">{book.data.title}</h1>
+
         <a
           href={`/authors/${createSlug(book.data.author)}`}
           class="text-gray-600 dark:text-gray-300 mt-2 hover:text-blue-500 dark:hover:text-blue-400">{book.data.author}</a>
 
+
         <div class="flex flex-wrap gap-1 mt-2">
+          <a
+          href={`/series/${createSlug(book.data.series)}`}
+          class="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 text-sm font-medium px-2.5 py-0.5 rounded"
+        >{book.data.series}</a>
           {book.data.tags.map(tag => (
             <a
               href={`/tags/${tag}`}

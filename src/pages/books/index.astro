@@ -1,21 +1,29 @@
 ---
 import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BookGrid from '../../components/BookGrid.astro';
 
-export async function getStaticPaths() {
-  const allBooks = await getCollection('books');
-  const firstPageBooks = allBooks.slice(0, 9);
-  
-  return [{
-    params: { page: undefined },
-    props: { 
-      books: firstPageBooks, 
-      currentPage: 1, 
-      totalPages: Math.ceil(allBooks.length / 9) 
-    }
-  }];
+const pageSize = 12;
+const allBooks = await getCollection('books');
+const byDate = []
+for (const i in allBooks) {
+  byDate.push({
+    date: new Date((await allBooks[i].render()).remarkPluginFrontmatter.lastModified),
+    data: allBooks[i],
+  })
 }
 
-const { books, currentPage, totalPages } = Astro.props;
+let sortedBooks = byDate.sort((a, b) =>{
+  return b.date.getTime() - a.date.getTime()
+});
+sortedBooks = sortedBooks.map(({data})=> data)
+
+const currentPage = 1
+const totalPages = Math.ceil(sortedBooks.length / pageSize);
+
+const books = sortedBooks.slice(0,  pageSize)
 ---
 
-<meta http-equiv="refresh" content={`0;url=/books/page/1`} />
+<BaseLayout title={`All Books - Page ${currentPage}`}>
+  <BookGrid books={books} currentPage={currentPage} totalPages={totalPages} />
+</BaseLayout>

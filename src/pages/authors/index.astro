@@ -20,6 +20,7 @@ const authors = [...new Set(books.map(book => book.data.author))].sort();
         <div class="mt-4">
           {books
             .filter(book => book.data.author === author)
+            .toSorted((a,b)=>a.slug.localeCompare(b.slug))
             .map(book => (
               <a
                 href={`/books/${book.slug}`}

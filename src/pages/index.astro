@@ -7,13 +7,13 @@ const allBooks = await getCollection('books');
 const byDate = []
 for (const i in allBooks) {
   byDate.push({
-    date: new Date((await allBooks[0].render()).remarkPluginFrontmatter.lastModified),
+    date: new Date((await allBooks[i].render()).remarkPluginFrontmatter.lastModified),
     data: allBooks[i],
   })
 }
 
 const sortedBooks = byDate.sort((a, b) =>{
-  return a.date.getTime() - b.date.getTime()
+  return b.date.getTime() - a.date.getTime()
 });
 
 const latestBooks = [];

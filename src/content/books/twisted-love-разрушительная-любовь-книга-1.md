@@ -7,6 +7,7 @@ tags:
   - 18+
 image: /src/assets/img/ana_huan__razrushitelnaya_lyubov.jpeg
 have: true
+read: true
 ---
 Иногда разрушительная любовь приходит не для того, чтобы разбить наше сердце, а для того, чтобы собрать его по кусочкам.
 

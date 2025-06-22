@@ -55,4 +55,5 @@ collections:
           config:
             multiple: false
       - { label: "Уже есть", name: "have", widget: "boolean", default: true }
+      - { label: "Прочитано", name: "read", widget: "boolean", default: true }
       - { label: "Описание", name: "body", widget: "markdown" }

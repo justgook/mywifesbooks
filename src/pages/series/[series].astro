@@ -18,7 +18,7 @@ export async function getStaticPaths() {
 
 const { series } = Astro.params;
 let title = series
-const books = await getCollection('books').then(books => 
+const allBooks = await getCollection('books').then(books => 
   books.filter(book => { 
     if (createSlug(book.data.series) === series) {
       title = book.data.series
@@ -27,9 +27,12 @@ const books = await getCollection('books').then(books =>
       return false
     })
 );
+
+const initialPageSize = 12;
+const initialBooks = allBooks.slice(0, initialPageSize);
 ---
 
 <BaseLayout title={title}>
   <h1 class="text-3xl font-bold mb-8">{title}</h1>
-  <BookGrid books={books} />
+  <BookGrid books={initialBooks} enableInfiniteScroll={true} series={series} totalCount={allBooks.length} />
 </BaseLayout>

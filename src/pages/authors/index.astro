@@ -5,32 +5,51 @@ import { getCollection } from 'astro:content';
 import createSlug from "../../lib/createSlug";
 
 const books = await getCollection('books');
-const authors = [...new Set(books.map(book => book.data.author))].sort();
+const authorNames = books.map((book: any) => book.data.author);
+const authors = [...new Set(authorNames)];
+authors.sort((a: any, b: any) => a.localeCompare(b, 'ru'));
+
+// Group by first letter
+const authorsByLetter: Record<string, any[]> = {};
+for (const author of authors) {
+  const authorStr = String(author);
+  const firstLetter = authorStr[0].toUpperCase();
+  if (!authorsByLetter[firstLetter]) {
+    authorsByLetter[firstLetter] = [];
+  }
+  authorsByLetter[firstLetter].push(author);
+}
 ---
 
 <BaseLayout title="Авторы">
   <h1 class="text-3xl font-bold mb-8">Авторы</h1>
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {authors.map(author => (
-      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-200">
-      <a
-         href={`/authors/${createSlug(author)}`}
-         class="text-xl font-bold text-gray-900 dark:text-gray-100 hover:text-blue-500 dark:hover:text-blue-400"
-      >{author}</h2>
-        <div class="mt-4">
-          {books
-            .filter(book => book.data.author === author)
-            .toSorted((a,b)=>a.slug.localeCompare(b.slug))
-            .map(book => (
-              <a
-                href={`/books/${book.slug}`}
-                class="block text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 mt-2 transition-colors duration-200"
-              >
-                {book.data.title}
-              </a>
-            ))}
-        </div>
+  
+  {Object.entries(authorsByLetter).sort().map(([letter, letterAuthors]) => (
+    <div class="mb-8">
+      <h2 class="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-4 border-b-2 border-blue-600 pb-2">{letter}</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {letterAuthors.map(author => (
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-200">
+            <a
+              href={`/authors/${createSlug(author)}`}
+              class="text-xl font-bold text-gray-900 dark:text-gray-100 hover:text-blue-500 dark:hover:text-blue-400"
+            >{author} ({books.filter((book: any) => book.data.author === author).length})</a>
+            <div class="mt-4">
+              {books
+                .filter((book: any) => book.data.author === author)
+                .toSorted((a: any,b: any)=>a.data.title.localeCompare(b.data.title, 'ru'))
+                .map((book: any) => (
+                  <a
+                    href={`/books/${book.slug}`}
+                    class="block text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 mt-2 transition-colors duration-200"
+                  >
+                    {book.data.title}
+                  </a>
+                ))}
+            </div>
+          </div>
+        ))}
       </div>
-    ))}
-  </div>
+    </div>
+  ))}
 </BaseLayout>

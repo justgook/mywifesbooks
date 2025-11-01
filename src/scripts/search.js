@@ -69,12 +69,20 @@ class Search {
     return this.booksData.filter(book => {
       const title = book?.title?.toLowerCase() || '';
       const author = book?.author?.toLowerCase() || '';
-      return title.includes(query) || author.includes(query);
+      const series = book?.series?.toLowerCase() || '';
+      return title.includes(query) || author.includes(query) || series.includes(query);
     });
+  }
+
+  highlightMatch(text, query) {
+    if (!text || !query) return text;
+    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    return text.replace(regex, '<mark class="bg-yellow-200 dark:bg-yellow-700">$1</mark>');
   }
 
   displayResults(results) {
     this.resultsContainer.innerHTML = '';
+    const query = this.activeInput.value.trim();
     
     if (results.length === 1) {
       window.location.href = `/books/${results[0].slug}`;
@@ -89,14 +97,31 @@ class Search {
         
         const title = document.createElement('div');
         title.className = 'font-medium dark:text-gray-100';
-        title.textContent = (result.title || '').replace(/"/g, '').trim();
+        title.innerHTML = this.highlightMatch(
+          (result.title || '').replace(/"/g, '').trim(),
+          query
+        );
         
         const author = document.createElement('div');
         author.className = 'text-sm text-gray-500 dark:text-gray-400';
-        author.textContent = (result.author || 'Unknown Author').replace(/"/g, '').trim();
+        author.innerHTML = this.highlightMatch(
+          (result.author || 'Unknown Author').replace(/"/g, '').trim(),
+          query
+        );
         
         item.appendChild(title);
         item.appendChild(author);
+        
+        if (result.series) {
+          const series = document.createElement('div');
+          series.className = 'text-xs text-blue-600 dark:text-blue-400 mt-1';
+          series.innerHTML = `Цикл: ${this.highlightMatch(
+            result.series.replace(/"/g, '').trim(),
+            query
+          )}`;
+          item.appendChild(series);
+        }
+        
         this.resultsContainer.appendChild(item);
       });
       this.resultsContainer.classList.add('show');

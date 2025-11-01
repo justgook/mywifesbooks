@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import BookGrid from '../components/BookGrid.astro';
 import { getCollection } from 'astro:content';
 
 const allBooks = await getCollection('books');
@@ -16,12 +15,70 @@ const sortedBooks = byDate.sort((a, b) =>{
   return b.date.getTime() - a.date.getTime()
 });
 
-const latestBooks = [];
-for (let i=0; i < 6; i++) {
-  latestBooks.push(sortedBooks[i].data)
-}
+// Pass all sorted books to client for randomization
+const allBooksData = sortedBooks.map(b => b.data);
 ---
 
 <BaseLayout title="Book Collection">
-  <BookGrid books={latestBooks} />
+  <div class="space-y-8">
+    <div id="random-books-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4" data-books={JSON.stringify(allBooksData.map(book => ({
+      slug: book.slug,
+      title: book.data.title,
+      author: book.data.author,
+      tags: book.data.tags,
+      read: book.data.read,
+      image: book.data.image.src
+    })))}></div>
+  </div>
+
+  <script>
+    // Client-side randomization
+    const container = document.getElementById('random-books-container');
+    const booksData = JSON.parse(container?.getAttribute('data-books') || '[]');
+    
+    // Fisher-Yates shuffle and take 12
+    const shuffled = [...booksData];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    const randomBooks = shuffled.slice(0, 12);
+    
+    // Render book grid matching BookGrid.astro style
+    if (container) {
+      container.innerHTML = randomBooks.map(book => `
+        <a href="/books/${book.slug}" class="block group relative">
+          <div class="aspect-[1/1.4] relative overflow-hidden">
+            <img
+              src="${book.image}"
+              alt="${book.title}"
+              class="absolute inset-0 w-full h-full object-cover"
+            />
+            <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                <h2 class="text-lg font-bold text-white">${book.title}</h2>
+                <p class="text-gray-200 text-sm">${book.author}</p>
+                <div class="flex flex-wrap gap-1 mt-1">
+                  ${book.tags.map(tag => `
+                    <span class="bg-gray-800/80 text-gray-200 text-xs font-medium px-2 py-0.5 rounded">
+                      ${tag}
+                    </span>
+                  `).join('')}
+                </div>
+                ${book.read ? `
+                  <span class="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 text-sm font-medium px-2.5 py-0.5 rounded mt-2 inline-block">
+                    Прочитано
+                  </span>
+                ` : `
+                  <span class="bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-200 text-sm font-medium px-2.5 py-0.5 rounded mt-2 inline-block">
+                    Не прочитано
+                  </span>
+                `}
+              </div>
+            </div>
+          </div>
+        </a>
+      `).join('');
+    }
+  </script>
 </BaseLayout>

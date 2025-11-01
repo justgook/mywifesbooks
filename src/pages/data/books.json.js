@@ -16,12 +16,14 @@ export async function GET({ params, request }) {
         const content = await fs.readFile(path.join(booksDir, file), 'utf-8');
         const titleMatch = content.match(/title:\s*(.*)/);
         const authorMatch = content.match(/author:\s*(.*)/);
+        const seriesMatch = content.match(/series:\s*(.*)/);
         const slug = file.replace('.md', '');
 
         if (titleMatch) {
           books.push({
             title: titleMatch[1].trim(),
             author: authorMatch ? authorMatch[1].trim() : 'Unknown Author',
+            series: seriesMatch ? seriesMatch[1].trim() : '',
             slug
           });
         }

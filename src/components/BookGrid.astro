@@ -1,37 +1,6 @@
 ---
 import { Image } from 'astro:assets';
-const { books = [], currentPage = 1, totalPages = 1 } = Astro.props;
-
-const getPageNumbers = () => {
-  const pages = [];
-  const maxVisible = 5; // Number of pages to show around current
-  const sidePages = Math.floor(maxVisible / 2);
-  let startPage = Math.max(1, currentPage - sidePages);
-  let endPage = Math.min(totalPages, currentPage + sidePages);
-
-  // Add first page and possible ellipsis
-  if (startPage > 1) {
-    pages.push(1);
-    if (startPage > 2) {
-      pages.push('...');
-    }
-  }
-
-  // Add middle pages
-  for (let i = startPage; i <= endPage; i++) {
-    pages.push(i);
-  }
-
-  // Add possible ellipsis and last page
-  if (endPage < totalPages) {
-    if (endPage < totalPages - 1) {
-      pages.push('...');
-    }
-    pages.push(totalPages);
-  }
-
-  return pages;
-};
+const { books = [], currentPage = 1, totalPages = 1, enableInfiniteScroll = false, tag = null, genre = null, series = null, totalCount = 0, isMainBooksPage = false } = Astro.props;
 ---
 
 <div class="space-y-8">
@@ -72,50 +41,213 @@ const getPageNumbers = () => {
       </a>
     )) : <p class="text-center text-gray-500">No books found</p>}
   </div>
-  {totalPages > 1 && (
-    <div class="flex justify-center gap-1 md:gap-2 flex-wrap">
-      {currentPage > 1 && (
-        <a
-          href={`/books/page/${currentPage - 1}`}
-          class="px-3 py-2 md:px-4 md:py-2 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
-          aria-label="Previous Page"
-        >
-          &laquo;
-        </a>
-      )}
-
-      {getPageNumbers().map((page) => (
-        typeof page === 'number' ? (
-          <a
-            href={`/books/page/${page}`}
-            class={`px-3 py-1 md:px-4 md:py-2 rounded ${
-              page === currentPage
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
-            }`}
-            aria-label={`Page ${page}`}
-          >
-            {page}
-          </a>
-        ) : (
-          <span
-            class="px-3 py-1 md:px-4 md:py-2 text-gray-500"
-            aria-hidden="true"
-          >
-            {page}
-          </span>
-        )
-      ))}
-
-      {currentPage < totalPages && (
-        <a
-          href={`/books/page/${currentPage + 1}`}
-          class="px-3 py-2 md:px-4 md:py-2 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
-          aria-label="Next Page"
-        >
-          &raquo;
-        </a>
-      )}
+  
+  {enableInfiniteScroll && (
+    <div 
+      id="infinite-scroll-trigger" 
+      class="h-20 flex items-center justify-center"
+      data-tag={tag}
+      data-genre={genre}
+      data-series={series}
+      data-total-count={totalCount}
+      data-is-main={isMainBooksPage}
+      data-initial-count={books.length}
+    >
+      <div id="loading-spinner" class="hidden">
+        <svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      </div>
     </div>
   )}
 </div>
+
+{enableInfiniteScroll && (
+  <div id="scroll-progress" class="fixed bottom-4 right-4 bg-black/80 text-white px-4 py-2 rounded-lg shadow-lg backdrop-blur-sm hidden z-50">
+    <span id="progress-text"></span>
+  </div>
+)}
+
+{enableInfiniteScroll && (
+  <script>
+    // Initialize global state only once
+    const trigger = document.getElementById('infinite-scroll-trigger');
+    
+    if (trigger && !window.infiniteScrollState) {
+      const tag = trigger.dataset.tag !== 'null' ? trigger.dataset.tag : null;
+      const genre = trigger.dataset.genre !== 'null' ? trigger.dataset.genre : null;
+      const series = trigger.dataset.series !== 'null' ? trigger.dataset.series : null;
+      const totalCount = parseInt(trigger.dataset.totalCount || '0');
+      const isMainBooksPage = trigger.dataset.isMain === 'true';
+      const initialCount = parseInt(trigger.dataset.initialCount || '12');
+      
+      window.infiniteScrollState = {
+        currentLoadedCount: initialCount,
+        loading: false,
+        pageSize: 12,
+        totalCount: totalCount,
+        tag: tag,
+        genre: genre,
+        series: series,
+        isMainBooksPage: isMainBooksPage
+      };
+      
+      console.log('Initialized infinite scroll state:', window.infiniteScrollState);
+    }
+    
+    const updateProgressIndicator = () => {
+      const progressEl = document.getElementById('scroll-progress');
+      const progressText = document.getElementById('progress-text');
+      
+      if (progressEl && progressText && window.infiniteScrollState) {
+        const scrollProgress = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+        
+        if (scrollProgress > 5) {
+          progressEl.classList.remove('hidden');
+          progressText.textContent = `${window.infiniteScrollState.currentLoadedCount} / ${window.infiniteScrollState.totalCount} книг`;
+        } else {
+          progressEl.classList.add('hidden');
+        }
+      }
+    };
+    
+    const createBookCard = (book) => {
+      const a = document.createElement('a');
+      a.href = `/books/${book.slug}`;
+      a.className = 'block group relative';
+      
+      const div = document.createElement('div');
+      div.className = 'aspect-[1/1.4] relative overflow-hidden';
+      
+      const img = document.createElement('img');
+      img.src = book.image.src;
+      img.alt = book.title;
+      img.className = 'absolute inset-0 w-full h-full object-cover';
+      
+      const overlay = document.createElement('div');
+      overlay.className = 'absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300';
+      
+      const content = document.createElement('div');
+      content.className = 'absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent';
+      
+      const title = document.createElement('h2');
+      title.className = 'text-lg font-bold text-white';
+      title.textContent = book.title;
+      
+      const author = document.createElement('p');
+      author.className = 'text-gray-200 text-sm';
+      author.textContent = book.author;
+      
+      const tagsContainer = document.createElement('div');
+      tagsContainer.className = 'flex flex-wrap gap-1 mt-1';
+      
+      if (book.tags) {
+        book.tags.forEach(tag => {
+          const tagSpan = document.createElement('span');
+          tagSpan.className = 'bg-gray-800/80 text-gray-200 text-xs font-medium px-2 py-0.5 rounded';
+          tagSpan.textContent = tag;
+          tagsContainer.appendChild(tagSpan);
+        });
+      }
+      
+      const readStatus = document.createElement('span');
+      readStatus.className = book.read 
+        ? 'bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 text-sm font-medium px-2.5 py-0.5 rounded mt-2 inline-block'
+        : 'bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-200 text-sm font-medium px-2.5 py-0.5 rounded mt-2 inline-block';
+      readStatus.textContent = book.read ? 'Прочитано' : 'Не прочитано';
+      
+      content.appendChild(title);
+      content.appendChild(author);
+      content.appendChild(tagsContainer);
+      content.appendChild(readStatus);
+      overlay.appendChild(content);
+      div.appendChild(img);
+      div.appendChild(overlay);
+      a.appendChild(div);
+      
+      return a;
+    };
+    
+    const loadMoreBooks = async () => {
+      const state = window.infiniteScrollState;
+      if (!state || state.loading || state.currentLoadedCount >= state.totalCount) {
+        return;
+      }
+      
+      state.loading = true;
+      const spinner = document.getElementById('loading-spinner');
+      if (spinner) spinner.classList.remove('hidden');
+      
+      console.log('Loading more books, current offset:', state.currentLoadedCount);
+      
+      try {
+        // Calculate the next page to load
+        const nextPage = Math.floor(state.currentLoadedCount / state.pageSize) + 1;
+        
+        let url;
+        if (state.tag) {
+          url = `/api/books-by-tag/${encodeURIComponent(state.tag)}/${nextPage}.json`;
+        } else if (state.genre) {
+          url = `/api/books-by-genre/${encodeURIComponent(state.genre)}/${nextPage}.json`;
+        } else if (state.series) {
+          url = `/api/books-by-series/${encodeURIComponent(state.series)}/${nextPage}.json`;
+        } else if (state.isMainBooksPage) {
+          url = `/api/books/${nextPage}.json`;
+        }
+        
+        if (!url) {
+          return;
+        }
+        
+        console.log('Fetching URL:', url);
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        console.log('Received books:', data.books?.length);
+        
+        if (data.books && data.books.length > 0) {
+          const grid = document.querySelector('.grid');
+          if (grid) {
+            data.books.forEach(book => {
+              const bookCard = createBookCard(book);
+              grid.appendChild(bookCard);
+            });
+            
+            state.currentLoadedCount += data.books.length;
+            console.log('Updated loaded count to:', state.currentLoadedCount);
+            updateProgressIndicator();
+          }
+        }
+      } catch (error) {
+        console.error('Error loading more books:', error);
+      } finally {
+        state.loading = false;
+        const spinner = document.getElementById('loading-spinner');
+        if (spinner) spinner.classList.add('hidden');
+      }
+    };
+    
+    // Only initialize observer once
+    if (!window.infiniteScrollObserver) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          const state = window.infiniteScrollState;
+          if (state && entry.isIntersecting && !state.loading && state.currentLoadedCount < state.totalCount) {
+            loadMoreBooks();
+          }
+        });
+      }, { threshold: 0.5 });
+      
+      const trigger = document.getElementById('infinite-scroll-trigger');
+      if (trigger) {
+        observer.observe(trigger);
+        window.infiniteScrollObserver = observer;
+      }
+      
+      // Initialize scroll progress indicator
+      window.addEventListener('scroll', updateProgressIndicator);
+      updateProgressIndicator();
+    }
+  </script>
+)}

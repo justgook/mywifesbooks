@@ -1,12 +1,13 @@
 ---
 import { Image } from 'astro:assets';
-import logo from "../assets/logo.svg"
+import logo from "../assets/new-logo.png"
 
 
 import SearchBar from './SearchBar.astro';
 const links = [
   { href: '/books', text: 'книги' },
   { href: '/authors', text: 'авторы' },
+  { href: '/series', text: 'циклы' },
   { href: '/tags', text: 'тэги' },
   { href: '/about', text: 'обо мне' },
 ];
@@ -24,7 +25,7 @@ const links = [
           </svg>
         </button>
              <a href="/" class="min-w-0 flex flex-row">
-              <Image class="h-9 w-12" src={logo} format="svg" alt="" loading="lazy" />
+              <Image class="h-14 w-auto" src={logo} format="webp" alt="" loading="lazy" />
               <span class="text-5xl hidden sm:block whitespace-nowrap dark:text-white truncate font-great-vibes">Книжная Полка</span>
             </a>
       </div>

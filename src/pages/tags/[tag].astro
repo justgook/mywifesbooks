@@ -15,12 +15,15 @@ export async function getStaticPaths() {
 }
 
 const { tag } = Astro.params;
-const books = await getCollection('books').then(books => 
+const allBooks = await getCollection('books').then(books => 
   books.filter(book => book.data.tags.includes(tag))
 );
+
+const initialPageSize = 12;
+const initialBooks = allBooks.slice(0, initialPageSize);
 ---
 
 <BaseLayout title={`Тэг "${tag}"`}>
   <h1 class="text-3xl font-bold mb-8">Тэг "{tag}"</h1>
-  <BookGrid books={books} />
+  <BookGrid books={initialBooks} enableInfiniteScroll={true} tag={tag} totalCount={allBooks.length} />
 </BaseLayout>

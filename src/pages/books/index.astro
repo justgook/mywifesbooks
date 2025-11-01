@@ -25,5 +25,12 @@ const books = sortedBooks.slice(0,  pageSize)
 ---
 
 <BaseLayout title={`All Books - Page ${currentPage}`}>
-  <BookGrid books={books} currentPage={currentPage} totalPages={totalPages} />
+  <BookGrid 
+    books={books} 
+    currentPage={currentPage} 
+    totalPages={totalPages}
+    enableInfiniteScroll={true}
+    totalCount={sortedBooks.length}
+    isMainBooksPage={true}
+  />
 </BaseLayout>

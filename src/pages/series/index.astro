@@ -4,21 +4,25 @@ import { getCollection } from 'astro:content';
 import createSlug from "../../lib/createSlug";
 
 const books = await getCollection('books');
-const tagsSet =  new Set(books.flatMap(book => book.data.series))
-tagsSet.delete("")
-const tags = [...tagsSet].sort();
+const seriesSet = new Set<string>();
+books.forEach(book => {
+  if (book.data.series && book.data.series.trim() !== '') {
+    seriesSet.add(book.data.series);
+  }
+});
+const series = [...seriesSet].sort();
 ---
 
-<BaseLayout title="Тэги">
+<BaseLayout title="Серии">
   <div class="max-w-2xl mx-auto">
-    <h1 class="text-3xl font-bold mb-8">Тэги</h1>
+    <h1 class="text-3xl font-bold mb-8">Серии</h1>
     <div class="flex flex-wrap gap-2">
-      {tags.map(tag => (
+      {series.map(s => (
         <a 
-          href={`/series/${createSlug(tag)}`}
+          href={`/series/${createSlug(s)}`}
           class="bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-medium px-2.5 py-0.5 rounded"
         >
-          {tag}
+          {s}
         </a>
       ))}
     </div>

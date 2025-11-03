@@ -4,9 +4,9 @@ const { books = [], currentPage = 1, totalPages = 1, enableInfiniteScroll = fals
 ---
 
 <div class="space-y-8">
-  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+  <div id="books-grid-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
     {books.length > 0 ? books.map(book => (
-      <a href={`/books/${book.slug}`} class="block group relative">
+      <a href={`/books/${book.slug}`} class="block group relative book-card">
         <div class="aspect-[1/1.4] relative overflow-hidden">
               <Image
             src={book.data.image}
@@ -40,27 +40,27 @@ const { books = [], currentPage = 1, totalPages = 1, enableInfiniteScroll = fals
         </div>
       </a>
     )) : <p class="text-center text-gray-500">No books found</p>}
-  </div>
-  
-  {enableInfiniteScroll && (
-    <div 
-      id="infinite-scroll-trigger" 
-      class="h-20 flex items-center justify-center"
-      data-tag={tag}
-      data-genre={genre}
-      data-series={series}
-      data-total-count={totalCount}
-      data-is-main={isMainBooksPage}
-      data-initial-count={books.length}
-    >
-      <div id="loading-spinner" class="hidden">
-        <svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
+    
+    {enableInfiniteScroll && (
+      <div 
+        id="infinite-scroll-trigger" 
+        class="col-span-full h-1"
+        data-tag={tag}
+        data-genre={genre}
+        data-series={series}
+        data-total-count={totalCount}
+        data-is-main={isMainBooksPage}
+        data-initial-count={books.length}
+      >
+        <div id="loading-spinner" class="hidden flex items-center justify-center py-8">
+          <svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </div>
       </div>
-    </div>
-  )}
+    )}
+  </div>
 </div>
 
 {enableInfiniteScroll && (
@@ -92,26 +92,58 @@ const { books = [], currentPage = 1, totalPages = 1, enableInfiniteScroll = fals
         series: series,
         isMainBooksPage: isMainBooksPage,
         currentPage: 1,
-        loadedPages: new Set([1]),
-        virtualPages: new Map() // Track virtual placeholder elements
+        loadedPages: new Set([1])
       };
       
       console.log('Initialized infinite scroll state:', window.infiniteScrollState);
-      
-      // Save scroll position before navigating to a book
-      const bookLinks = document.querySelectorAll('a[href^="/books/"]');
-      bookLinks.forEach(link => {
-        link.dataset.handlerAttached = 'true';
-        link.addEventListener('click', (e) => {
-          const state = window.infiniteScrollState;
-          if (state) {
-            sessionStorage.setItem('scrollPage', state.currentPage.toString());
-            sessionStorage.setItem('scrollPosition', window.scrollY.toString());
-            sessionStorage.setItem('loadedPages', JSON.stringify([...state.loadedPages]));
-          }
-        });
-      });
     }
+    
+    // Define helper functions
+    const createPlaceholderCard = () => {
+      const placeholder = document.createElement('div');
+      placeholder.className = 'block relative placeholder-card';
+      
+      const aspectDiv = document.createElement('div');
+      aspectDiv.className = 'aspect-[1/1.4] relative overflow-hidden bg-gray-200 dark:bg-gray-700 animate-pulse';
+      
+      placeholder.appendChild(aspectDiv);
+      return placeholder;
+    };
+    
+    const updateVirtualPages = () => {
+      const state = window.infiniteScrollState;
+      if (!state) return;
+      
+      const grid = document.getElementById('books-grid-container');
+      if (!grid) return;
+      
+      // Remove existing placeholders
+      const existingPlaceholders = grid.querySelectorAll('.placeholder-card');
+      existingPlaceholders.forEach(p => p.remove());
+      
+      // Calculate how many books are not yet loaded
+      const totalBooks = state.totalCount;
+      const loadedBooks = state.currentLoadedCount;
+      const unloadedBooks = totalBooks - loadedBooks;
+      
+      if (unloadedBooks > 0) {
+        // Find the trigger element
+        const trigger = document.getElementById('infinite-scroll-trigger');
+        
+        // Create placeholder cards for all unloaded books
+        for (let i = 0; i < unloadedBooks; i++) {
+          const placeholder = createPlaceholderCard();
+          // Insert before the trigger
+          if (trigger) {
+            grid.insertBefore(placeholder, trigger);
+          } else {
+            grid.appendChild(placeholder);
+          }
+        }
+        
+        console.log('Created placeholders for', unloadedBooks, 'books');
+      }
+    };
     
     const updateProgressIndicator = () => {
       const progressEl = document.getElementById('scroll-progress');
@@ -133,10 +165,10 @@ const { books = [], currentPage = 1, totalPages = 1, enableInfiniteScroll = fals
       const state = window.infiniteScrollState;
       if (!state) return;
       
-      const grid = document.querySelector('.grid');
+      const grid = document.getElementById('books-grid-container');
       if (!grid) return;
       
-      const bookCards = grid.querySelectorAll('a[href^="/books/"]');
+      const bookCards = grid.querySelectorAll('.book-card');
       const viewportMiddle = window.scrollY + window.innerHeight / 2;
       
       // Find which "page" we're currently viewing based on scroll position
@@ -161,10 +193,31 @@ const { books = [], currentPage = 1, totalPages = 1, enableInfiniteScroll = fals
       }
     };
     
+    // Initialize virtual pages and attach event handlers if state exists
+    if (window.infiniteScrollState) {
+      updateVirtualPages();
+      
+      // Save scroll position before navigating to a book
+      const bookLinks = document.querySelectorAll('a[href^="/books/"]');
+      bookLinks.forEach(link => {
+        if (!link.dataset.handlerAttached) {
+          link.dataset.handlerAttached = 'true';
+          link.addEventListener('click', (e) => {
+            const state = window.infiniteScrollState;
+            if (state) {
+              sessionStorage.setItem('scrollPage', state.currentPage.toString());
+              sessionStorage.setItem('scrollPosition', window.scrollY.toString());
+              sessionStorage.setItem('loadedPages', JSON.stringify([...state.loadedPages]));
+            }
+          });
+        }
+      });
+    }
+    
     const createBookCard = (book) => {
       const a = document.createElement('a');
       a.href = `/books/${book.slug}`;
-      a.className = 'block group relative';
+      a.className = 'block group relative book-card';
       
       const div = document.createElement('div');
       div.className = 'aspect-[1/1.4] relative overflow-hidden';
@@ -256,17 +309,27 @@ const { books = [], currentPage = 1, totalPages = 1, enableInfiniteScroll = fals
         console.log('Received books:', data.books?.length);
         
         if (data.books && data.books.length > 0) {
-          const grid = document.querySelector('.grid');
+          const grid = document.getElementById('books-grid-container');
+          const trigger = document.getElementById('infinite-scroll-trigger');
+          
           if (grid) {
             data.books.forEach(book => {
               const bookCard = createBookCard(book);
-              grid.appendChild(bookCard);
+              // Insert before trigger element (and placeholders)
+              if (trigger) {
+                grid.insertBefore(bookCard, trigger);
+              } else {
+                grid.appendChild(bookCard);
+              }
             });
             
             state.currentLoadedCount += data.books.length;
             state.loadedPages.add(nextPage);
             console.log('Updated loaded count to:', state.currentLoadedCount);
             updateProgressIndicator();
+            
+            // Update virtual pages to reduce placeholder height
+            updateVirtualPages();
             
             // Attach click handlers to new book links
             const newBookLinks = grid.querySelectorAll('a[href^="/books/"]:not([data-handler-attached])');
@@ -372,11 +435,18 @@ const { books = [], currentPage = 1, totalPages = 1, enableInfiniteScroll = fals
                   const data = await response.json();
                   
                   if (data.books && data.books.length > 0) {
-                    const grid = document.querySelector('.grid');
+                    const grid = document.getElementById('books-grid-container');
+                    const trigger = document.getElementById('infinite-scroll-trigger');
+                    
                     if (grid) {
                       data.books.forEach(book => {
                         const bookCard = createBookCard(book);
-                        grid.appendChild(bookCard);
+                        // Insert before trigger element (and placeholders)
+                        if (trigger) {
+                          grid.insertBefore(bookCard, trigger);
+                        } else {
+                          grid.appendChild(bookCard);
+                        }
                       });
                       
                       state.currentLoadedCount += data.books.length;
@@ -385,6 +455,9 @@ const { books = [], currentPage = 1, totalPages = 1, enableInfiniteScroll = fals
                   }
                 }
               }
+              
+              // Update virtual pages to remove placeholders for loaded content
+              updateVirtualPages();
               
               // Wait for images to load before scrolling
               setTimeout(() => {

@@ -133,6 +133,11 @@ const { books = [], currentPage = 1, totalPages = 1, enableInfiniteScroll = fals
         // Create placeholder cards for all unloaded books
         for (let i = 0; i < unloadedBooks; i++) {
           const placeholder = createPlaceholderCard();
+          placeholder.setAttribute('data-placeholder-index', i.toString());
+          // Mark the first placeholder for observation
+          if (i === 0) {
+            placeholder.classList.add('observe-me');
+          }
           // Insert before the trigger
           if (trigger) {
             grid.insertBefore(placeholder, trigger);
@@ -142,6 +147,15 @@ const { books = [], currentPage = 1, totalPages = 1, enableInfiniteScroll = fals
         }
         
         console.log('Created placeholders for', unloadedBooks, 'books');
+        
+        // Re-observe the first placeholder
+        if (window.infiniteScrollObserver) {
+          const firstPlaceholder = grid.querySelector('.placeholder-card.observe-me');
+          if (firstPlaceholder) {
+            window.infiniteScrollObserver.observe(firstPlaceholder);
+            console.log('Now observing first placeholder');
+          }
+        }
       }
     };
     
@@ -169,6 +183,8 @@ const { books = [], currentPage = 1, totalPages = 1, enableInfiniteScroll = fals
       if (!grid) return;
       
       const bookCards = grid.querySelectorAll('.book-card');
+      if (bookCards.length === 0) return;
+      
       const viewportMiddle = window.scrollY + window.innerHeight / 2;
       
       // Find which "page" we're currently viewing based on scroll position
@@ -184,12 +200,13 @@ const { books = [], currentPage = 1, totalPages = 1, enableInfiniteScroll = fals
         }
       });
       
-      if (currentViewPage !== state.currentPage) {
+      if (currentViewPage !== state.currentPage && currentViewPage > 0) {
         state.currentPage = currentViewPage;
         
         // Update URL hash without scrolling
         const newUrl = `${window.location.pathname}#page=${currentViewPage}`;
         history.replaceState(null, '', newUrl);
+        console.log('Updated URL hash to page:', currentViewPage);
       }
     };
     
@@ -313,13 +330,22 @@ const { books = [], currentPage = 1, totalPages = 1, enableInfiniteScroll = fals
           const trigger = document.getElementById('infinite-scroll-trigger');
           
           if (grid) {
-            data.books.forEach(book => {
+            // Get all placeholders
+            const placeholders = grid.querySelectorAll('.placeholder-card');
+            
+            data.books.forEach((book, index) => {
               const bookCard = createBookCard(book);
-              // Insert before trigger element (and placeholders)
-              if (trigger) {
-                grid.insertBefore(bookCard, trigger);
+              
+              // Replace the first placeholder with the actual book card
+              if (placeholders[index]) {
+                placeholders[index].replaceWith(bookCard);
               } else {
-                grid.appendChild(bookCard);
+                // If no placeholder, insert before trigger
+                if (trigger) {
+                  grid.insertBefore(bookCard, trigger);
+                } else {
+                  grid.appendChild(bookCard);
+                }
               }
             });
             
@@ -328,7 +354,7 @@ const { books = [], currentPage = 1, totalPages = 1, enableInfiniteScroll = fals
             console.log('Updated loaded count to:', state.currentLoadedCount);
             updateProgressIndicator();
             
-            // Update virtual pages to reduce placeholder height
+            // Update virtual pages to create new placeholders and observe the first one
             updateVirtualPages();
             
             // Attach click handlers to new book links
@@ -361,15 +387,28 @@ const { books = [], currentPage = 1, totalPages = 1, enableInfiniteScroll = fals
         entries.forEach(entry => {
           const state = window.infiniteScrollState;
           if (state && entry.isIntersecting && !state.loading && state.currentLoadedCount < state.totalCount) {
+            console.log('Placeholder visible, loading more books...');
+            // Unobserve this placeholder since we're loading now
+            observer.unobserve(entry.target);
             loadMoreBooks();
           }
         });
-      }, { threshold: 0.5 });
+      }, { 
+        threshold: 0.1,
+        rootMargin: '200px' // Start loading 200px before placeholder is visible
+      });
       
-      const trigger = document.getElementById('infinite-scroll-trigger');
-      if (trigger) {
-        observer.observe(trigger);
-        window.infiniteScrollObserver = observer;
+      window.infiniteScrollObserver = observer;
+      
+      // Observe the first placeholder initially
+      const grid = document.getElementById('books-grid-container');
+      if (grid) {
+        const firstPlaceholder = grid.querySelector('.placeholder-card');
+        if (firstPlaceholder) {
+          firstPlaceholder.classList.add('observe-me');
+          observer.observe(firstPlaceholder);
+          console.log('Initial observation of first placeholder');
+        }
       }
       
       // Initialize scroll progress indicator and hash updates
@@ -439,13 +478,22 @@ const { books = [], currentPage = 1, totalPages = 1, enableInfiniteScroll = fals
                     const trigger = document.getElementById('infinite-scroll-trigger');
                     
                     if (grid) {
-                      data.books.forEach(book => {
+                      // Get all placeholders
+                      const placeholders = grid.querySelectorAll('.placeholder-card');
+                      
+                      data.books.forEach((book, index) => {
                         const bookCard = createBookCard(book);
-                        // Insert before trigger element (and placeholders)
-                        if (trigger) {
-                          grid.insertBefore(bookCard, trigger);
+                        
+                        // Replace the first placeholder with the actual book card
+                        if (placeholders[index]) {
+                          placeholders[index].replaceWith(bookCard);
                         } else {
-                          grid.appendChild(bookCard);
+                          // If no placeholder, insert before trigger
+                          if (trigger) {
+                            grid.insertBefore(bookCard, trigger);
+                          } else {
+                            grid.appendChild(bookCard);
+                          }
                         }
                       });
                       

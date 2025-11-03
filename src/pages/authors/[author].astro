@@ -6,9 +6,13 @@ import createSlug from "../../lib/createSlug";
 
 export async function getStaticPaths() {
   const books = await getCollection('books');
-  const tagsSet =  new Set(books.flatMap(book => createSlug(book.data.author)))
-  tagsSet.delete("")
-  const tags = [...tagsSet]
+  // Split authors by comma and create slugs for each
+  const allAuthors = books.flatMap(book => 
+    book.data.author.split(',').map((author: string) => author.trim())
+  );
+  const tagsSet = new Set(allAuthors.map(author => createSlug(author)));
+  tagsSet.delete("");
+  const tags = [...tagsSet];
   return tags.map(author => ({
     params: { author },
     props: { author }
@@ -16,15 +20,18 @@ export async function getStaticPaths() {
 }
 
 const { author } = Astro.params;
-let title = author
+let title = author;
 const books = await getCollection('books').then(books => 
-  books.filter(book => { 
-    if (createSlug(book.data.author) === author) {
-      title = book.data.author
-      return true
+  books.filter(book => {
+    // Split authors by comma and check if any match the slug
+    const authors = book.data.author.split(',').map((a: string) => a.trim());
+    const matchingAuthor = authors.find((a: string) => createSlug(a) === author);
+    if (matchingAuthor) {
+      title = matchingAuthor;
+      return true;
     }
-      return false
-    })
+    return false;
+  })
 );
 ---
 

@@ -1,0 +1,65 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import BookGrid from '../../../components/BookGrid.astro';
+import { getCollection } from 'astro:content';
+import createSlug from "../../../lib/createSlug";
+
+export async function getStaticPaths() {
+  const pageSize = 12;
+  const allBooks = await getCollection('books');
+  
+  const seriesSet = new Set(allBooks.flatMap(book => createSlug(book.data.series)));
+  seriesSet.delete("");
+  const seriesList = [...seriesSet];
+  
+  const paths = [];
+  
+  for (const seriesSlug of seriesList) {
+    let seriesTitle = seriesSlug;
+    const seriesBooks = allBooks.filter(book => {
+      if (createSlug(book.data.series) === seriesSlug) {
+        seriesTitle = book.data.series;
+        return true;
+      }
+      return false;
+    });
+    
+    const totalPages = Math.ceil(seriesBooks.length / pageSize);
+    
+    for (let page = 1; page <= totalPages; page++) {
+      const offset = (page - 1) * pageSize;
+      const paginatedBooks = seriesBooks.slice(offset, offset + pageSize);
+      
+      paths.push({
+        params: { series: seriesSlug, page: page.toString() },
+        props: {
+          books: paginatedBooks,
+          currentPage: page,
+          totalPages: totalPages,
+          totalCount: seriesBooks.length,
+          pageSize: pageSize,
+          series: seriesSlug,
+          seriesTitle: seriesTitle
+        }
+      });
+    }
+  }
+  
+  return paths;
+}
+
+const { books, currentPage, totalPages, totalCount, pageSize, series, seriesTitle } = Astro.props;
+---
+
+<BaseLayout title={`${seriesTitle} - Page ${currentPage} of ${totalPages}`}>
+  <h1 class="text-3xl font-bold mb-8">{seriesTitle}</h1>
+  <BookGrid 
+    books={books} 
+    currentPage={currentPage} 
+    totalPages={totalPages}
+    totalCount={totalCount}
+    pageSize={pageSize}
+    enableVirtualScroll={true}
+    series={series}
+  />
+</BaseLayout>

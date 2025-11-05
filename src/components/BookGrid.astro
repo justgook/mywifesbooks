@@ -1,569 +1,436 @@
 ---
 import { Image } from 'astro:assets';
-const { books = [], currentPage = 1, totalPages = 1, enableInfiniteScroll = false, tag = null, genre = null, series = null, totalCount = 0, isMainBooksPage = false } = Astro.props;
+
+const { 
+  books = [], 
+  currentPage = 1, 
+  totalPages = 1, 
+  enableVirtualScroll = false, 
+  tag = null, 
+  genre = null, 
+  series = null, 
+  totalCount = 0, 
+  pageSize = 12,
+  isMainBooksPage = false 
+} = Astro.props;
+
+const placeholdersBefore = (currentPage - 1) * pageSize;
+const booksAfter = totalCount - (currentPage * pageSize);
+const placeholdersAfter = Math.max(0, booksAfter);
 ---
 
 <div class="space-y-8">
   <div id="books-grid-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-    {books.length > 0 ? books.map(book => (
-      <a href={`/books/${book.slug}`} class="block group relative book-card">
+    
+    {enableVirtualScroll && placeholdersBefore > 0 && (
+      <>
+        {Array.from({ length: placeholdersBefore }, (_, i) => {
+          const page = Math.floor(i / pageSize) + 1;
+          const indexInPage = i % pageSize;
+          return (
+            <div 
+              class="book-placeholder" 
+              data-page={page}
+              data-index={indexInPage}
+            >
+              <div class="aspect-[1/1.4] relative overflow-hidden bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800"></div>
+            </div>
+          );
+        })}
+      </>
+    )}
+    
+    <div id="page-start" class="col-span-full h-0" style="scroll-margin-top: 0;"></div>
+    
+    {books.length > 0 ? books.map((book) => (
+      <a href={`/books/${book.slug}`} class="block group relative book-card" data-page={currentPage}>
         <div class="aspect-[1/1.4] relative overflow-hidden">
-              <Image
+          <Image
             src={book.data.image}
             alt={book.data.title}
             class="absolute inset-0 w-full h-full object-cover"
+            loading={enableVirtualScroll ? "lazy" : "eager"}
           />
           <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
               <h2 class="text-lg font-bold text-white">{book.data.title}</h2>
               <p class="text-gray-200 text-sm">{book.data.author}</p>
               <div class="flex flex-wrap gap-1 mt-1">
-                {book.data.tags.map(tag => (
+                {book.data.tags.map((tag: string) => (
                   <span class="bg-gray-800/80 text-gray-200 text-xs font-medium px-2 py-0.5 rounded">
                     {tag}
                   </span>
                 ))}
               </div>
-           {book.data.read && (
-          <span class="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 text-sm font-medium px-2.5 py-0.5 rounded mt-2 inline-block">
-            Прочитано
-          </span>
-        )}
-
-        {!book.data.read && (
-          <span class="bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-200 text-sm font-medium px-2.5 py-0.5 rounded mt-2 inline-block">
-            Не прочитано
-          </span>
-        )}
+              {book.data.read && (
+                <span class="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 text-sm font-medium px-2.5 py-0.5 rounded mt-2 inline-block">
+                  Прочитано
+                </span>
+              )}
+              {!book.data.read && (
+                <span class="bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-200 text-sm font-medium px-2.5 py-0.5 rounded mt-2 inline-block">
+                  Не прочитано
+                </span>
+              )}
             </div>
           </div>
         </div>
       </a>
     )) : <p class="text-center text-gray-500">No books found</p>}
     
-    {enableInfiniteScroll && (
-      <div 
-        id="infinite-scroll-trigger" 
-        class="col-span-full h-1"
-        data-tag={tag}
-        data-genre={genre}
-        data-series={series}
-        data-total-count={totalCount}
-        data-is-main={isMainBooksPage}
-        data-initial-count={books.length}
-      >
-        <div id="loading-spinner" class="hidden flex items-center justify-center py-8">
-          <svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-        </div>
-      </div>
+    {enableVirtualScroll && placeholdersAfter > 0 && (
+      <>
+        {Array.from({ length: placeholdersAfter }, (_, i) => {
+          const page = currentPage + Math.floor(i / pageSize) + 1;
+          const indexInPage = i % pageSize;
+          return (
+            <div 
+              class="book-placeholder" 
+              data-page={page}
+              data-index={indexInPage}
+            >
+              <div class="aspect-[1/1.4] relative overflow-hidden bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800"></div>
+            </div>
+          );
+        })}
+      </>
     )}
   </div>
+
+  {enableVirtualScroll && (
+    <nav id="pagination-nav" class="flex justify-center items-center gap-4 py-8">
+      {currentPage > 1 && (
+        <a 
+          href={isMainBooksPage ? `/books/${currentPage - 1}` : 
+                tag ? `/tags/${tag}/${currentPage - 1}` :
+                genre ? `/genres/${genre}/${currentPage - 1}` :
+                series ? `/series/${series}/${currentPage - 1}` : '#'}
+          class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+        >
+          ← Previous
+        </a>
+      )}
+      
+      <span class="text-gray-700 dark:text-gray-300">
+        Page {currentPage} of {totalPages}
+      </span>
+      
+      {currentPage < totalPages && (
+        <a 
+          href={isMainBooksPage ? `/books/${currentPage + 1}` : 
+                tag ? `/tags/${tag}/${currentPage + 1}` :
+                genre ? `/genres/${genre}/${currentPage + 1}` :
+                series ? `/series/${series}/${currentPage + 1}` : '#'}
+          class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+        >
+          Next →
+        </a>
+      )}
+    </nav>
+  )}
 </div>
 
-{enableInfiniteScroll && (
-  <div id="scroll-progress" class="fixed bottom-4 right-4 bg-black/80 text-white px-4 py-2 rounded-lg shadow-lg backdrop-blur-sm hidden z-50">
-    <span id="progress-text"></span>
+{enableVirtualScroll && (
+  <div id="scroll-progress" class="fixed bottom-4 right-4 bg-black/80 text-white px-4 py-2 rounded-lg shadow-lg backdrop-blur-sm z-50">
+    <span id="progress-text">Page {currentPage} / {totalPages}</span>
   </div>
 )}
 
-{enableInfiniteScroll && (
-  <script is:inline>
-    // Initialize global state only once
-    const trigger = document.getElementById('infinite-scroll-trigger');
-    
-    if (trigger && !window.infiniteScrollState) {
-      const tag = trigger.dataset.tag !== 'null' ? trigger.dataset.tag : null;
-      const genre = trigger.dataset.genre !== 'null' ? trigger.dataset.genre : null;
-      const series = trigger.dataset.series !== 'null' ? trigger.dataset.series : null;
-      const totalCount = parseInt(trigger.dataset.totalCount || '0');
-      const isMainBooksPage = trigger.dataset.isMain === 'true';
-      const initialCount = parseInt(trigger.dataset.initialCount || '12');
+<style>
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  .book-placeholder > div {
+    background: linear-gradient(
+      90deg,
+      rgba(191, 219, 254, 0.3) 0%,
+      rgba(147, 197, 253, 0.5) 50%,
+      rgba(191, 219, 254, 0.3) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s ease-in-out infinite;
+  }
+
+  :global(.dark) .book-placeholder > div {
+    background: linear-gradient(
+      90deg,
+      rgba(30, 58, 138, 0.3) 0%,
+      rgba(30, 64, 175, 0.5) 50%,
+      rgba(30, 58, 138, 0.3) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s ease-in-out infinite;
+  }
+</style>
+
+{enableVirtualScroll && (
+  <script is:inline define:vars={{ currentPage, totalPages, pageSize, totalCount, tag, genre, series, isMainBooksPage }}>
+    if (!window.virtualScrollInitialized) {
+      window.virtualScrollInitialized = true;
       
-      window.infiniteScrollState = {
-        currentLoadedCount: initialCount,
-        loading: false,
-        pageSize: 12,
+      const state = {
+        currentPage: currentPage,
+        totalPages: totalPages,
+        pageSize: pageSize,
         totalCount: totalCount,
         tag: tag,
         genre: genre,
         series: series,
         isMainBooksPage: isMainBooksPage,
-        currentPage: 1,
-        loadedPages: new Set([1])
+        loadedPages: new Set([currentPage]),
+        loading: false,
+        observer: null
       };
-      
-      console.log('Initialized infinite scroll state:', window.infiniteScrollState);
-    }
-    
-    // Define helper functions
-    const createPlaceholderCard = () => {
-      const placeholder = document.createElement('div');
-      placeholder.className = 'block relative placeholder-card';
-      
-      const aspectDiv = document.createElement('div');
-      aspectDiv.className = 'aspect-[1/1.4] relative overflow-hidden bg-gray-200 dark:bg-gray-700 animate-pulse';
-      
-      placeholder.appendChild(aspectDiv);
-      return placeholder;
-    };
-    
-    const updateVirtualPages = () => {
-      const state = window.infiniteScrollState;
-      if (!state) return;
-      
-      const grid = document.getElementById('books-grid-container');
-      if (!grid) return;
-      
-      // Remove existing placeholders
-      const existingPlaceholders = grid.querySelectorAll('.placeholder-card');
-      existingPlaceholders.forEach(p => p.remove());
-      
-      // Calculate how many books are not yet loaded
-      const totalBooks = state.totalCount;
-      const loadedBooks = state.currentLoadedCount;
-      const unloadedBooks = totalBooks - loadedBooks;
-      
-      if (unloadedBooks > 0) {
-        // Find the trigger element
-        const trigger = document.getElementById('infinite-scroll-trigger');
-        
-        // Create placeholder cards for all unloaded books
-        for (let i = 0; i < unloadedBooks; i++) {
-          const placeholder = createPlaceholderCard();
-          placeholder.setAttribute('data-placeholder-index', i.toString());
-          // Mark the first placeholder for observation
-          if (i === 0) {
-            placeholder.classList.add('observe-me');
-          }
-          // Insert before the trigger
-          if (trigger) {
-            grid.insertBefore(placeholder, trigger);
-          } else {
-            grid.appendChild(placeholder);
-          }
+
+      const removePaginationNav = () => {
+        const nav = document.getElementById('pagination-nav');
+        if (nav) nav.remove();
+      };
+
+      const scrollToPageStart = () => {
+        const anchor = document.getElementById('page-start');
+        if (anchor) {
+          setTimeout(() => {
+            anchor.scrollIntoView({ behavior: 'instant', block: 'start' });
+          }, 10);
         }
-        
-        console.log('Created placeholders for', unloadedBooks, 'books');
-        
-        // Re-observe the first placeholder
-        if (window.infiniteScrollObserver) {
-          const firstPlaceholder = grid.querySelector('.placeholder-card.observe-me');
-          if (firstPlaceholder) {
-            window.infiniteScrollObserver.observe(firstPlaceholder);
-            console.log('Now observing first placeholder');
-          }
-        }
-      }
-    };
-    
-    const updateProgressIndicator = () => {
-      const progressEl = document.getElementById('scroll-progress');
-      const progressText = document.getElementById('progress-text');
-      
-      if (progressEl && progressText && window.infiniteScrollState) {
-        const scrollProgress = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-        
-        if (scrollProgress > 5) {
-          progressEl.classList.remove('hidden');
-          progressText.textContent = `${window.infiniteScrollState.currentLoadedCount} / ${window.infiniteScrollState.totalCount} книг`;
-        } else {
-          progressEl.classList.add('hidden');
-        }
-      }
-    };
-    
-    const updateScrollHash = () => {
-      const state = window.infiniteScrollState;
-      if (!state) return;
-      
-      const grid = document.getElementById('books-grid-container');
-      if (!grid) return;
-      
-      const bookCards = grid.querySelectorAll('.book-card');
-      if (bookCards.length === 0) return;
-      
-      const viewportMiddle = window.scrollY + window.innerHeight / 2;
-      
-      // Find which "page" we're currently viewing based on scroll position
-      const itemsPerPage = state.pageSize;
-      let currentViewPage = 1;
-      
-      bookCards.forEach((card, index) => {
-        const rect = card.getBoundingClientRect();
-        const cardTop = rect.top + window.scrollY;
-        
-        if (cardTop < viewportMiddle) {
-          currentViewPage = Math.floor(index / itemsPerPage) + 1;
-        }
-      });
-      
-      if (currentViewPage !== state.currentPage && currentViewPage > 0) {
-        state.currentPage = currentViewPage;
-        
-        // Update URL hash without scrolling
-        const newUrl = `${window.location.pathname}#page=${currentViewPage}`;
-        history.replaceState(null, '', newUrl);
-        console.log('Updated URL hash to page:', currentViewPage);
-      }
-    };
-    
-    // Initialize virtual pages and attach event handlers if state exists
-    if (window.infiniteScrollState) {
-      updateVirtualPages();
-      
-      // Save scroll position before navigating to a book
-      const bookLinks = document.querySelectorAll('a[href^="/books/"]');
-      bookLinks.forEach(link => {
-        if (!link.dataset.handlerAttached) {
-          link.dataset.handlerAttached = 'true';
-          link.addEventListener('click', (e) => {
-            const state = window.infiniteScrollState;
-            if (state) {
-              sessionStorage.setItem('scrollPage', state.currentPage.toString());
-              sessionStorage.setItem('scrollPosition', window.scrollY.toString());
-              sessionStorage.setItem('loadedPages', JSON.stringify([...state.loadedPages]));
-            }
+      };
+
+      const createBookCard = (book, pageNumber) => {
+        const a = document.createElement('a');
+        a.href = `/books/${book.slug}`;
+        a.className = 'block group relative book-card';
+        a.dataset.page = pageNumber.toString();
+
+        const div = document.createElement('div');
+        div.className = 'aspect-[1/1.4] relative overflow-hidden';
+
+        const img = document.createElement('img');
+        img.src = book.image.src;
+        img.alt = book.title;
+        img.className = 'absolute inset-0 w-full h-full object-cover';
+        img.loading = 'lazy';
+
+        const overlay = document.createElement('div');
+        overlay.className = 'absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300';
+
+        const content = document.createElement('div');
+        content.className = 'absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent';
+
+        const title = document.createElement('h2');
+        title.className = 'text-lg font-bold text-white';
+        title.textContent = book.title;
+
+        const author = document.createElement('p');
+        author.className = 'text-gray-200 text-sm';
+        author.textContent = book.author;
+
+        const tagsContainer = document.createElement('div');
+        tagsContainer.className = 'flex flex-wrap gap-1 mt-1';
+
+        if (book.tags) {
+          book.tags.forEach(tag => {
+            const tagSpan = document.createElement('span');
+            tagSpan.className = 'bg-gray-800/80 text-gray-200 text-xs font-medium px-2 py-0.5 rounded';
+            tagSpan.textContent = tag;
+            tagsContainer.appendChild(tagSpan);
           });
         }
-      });
-    }
-    
-    const createBookCard = (book) => {
-      const a = document.createElement('a');
-      a.href = `/books/${book.slug}`;
-      a.className = 'block group relative book-card';
-      
-      const div = document.createElement('div');
-      div.className = 'aspect-[1/1.4] relative overflow-hidden';
-      
-      const img = document.createElement('img');
-      img.src = book.image.src;
-      img.alt = book.title;
-      img.className = 'absolute inset-0 w-full h-full object-cover';
-      
-      const overlay = document.createElement('div');
-      overlay.className = 'absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300';
-      
-      const content = document.createElement('div');
-      content.className = 'absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent';
-      
-      const title = document.createElement('h2');
-      title.className = 'text-lg font-bold text-white';
-      title.textContent = book.title;
-      
-      const author = document.createElement('p');
-      author.className = 'text-gray-200 text-sm';
-      author.textContent = book.author;
-      
-      const tagsContainer = document.createElement('div');
-      tagsContainer.className = 'flex flex-wrap gap-1 mt-1';
-      
-      if (book.tags) {
-        book.tags.forEach(tag => {
-          const tagSpan = document.createElement('span');
-          tagSpan.className = 'bg-gray-800/80 text-gray-200 text-xs font-medium px-2 py-0.5 rounded';
-          tagSpan.textContent = tag;
-          tagsContainer.appendChild(tagSpan);
-        });
-      }
-      
-      const readStatus = document.createElement('span');
-      readStatus.className = book.read 
-        ? 'bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 text-sm font-medium px-2.5 py-0.5 rounded mt-2 inline-block'
-        : 'bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-200 text-sm font-medium px-2.5 py-0.5 rounded mt-2 inline-block';
-      readStatus.textContent = book.read ? 'Прочитано' : 'Не прочитано';
-      
-      content.appendChild(title);
-      content.appendChild(author);
-      content.appendChild(tagsContainer);
-      content.appendChild(readStatus);
-      overlay.appendChild(content);
-      div.appendChild(img);
-      div.appendChild(overlay);
-      a.appendChild(div);
-      
-      return a;
-    };
-    
-    const loadMoreBooks = async () => {
-      const state = window.infiniteScrollState;
-      if (!state || state.loading || state.currentLoadedCount >= state.totalCount) {
-        return;
-      }
-      
-      state.loading = true;
-      const spinner = document.getElementById('loading-spinner');
-      if (spinner) spinner.classList.remove('hidden');
-      
-      console.log('Loading more books, current offset:', state.currentLoadedCount);
-      
-      try {
-        // Calculate the next page to load
-        const nextPage = Math.floor(state.currentLoadedCount / state.pageSize) + 1;
+
+        const readStatus = document.createElement('span');
+        readStatus.className = book.read 
+          ? 'bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 text-sm font-medium px-2.5 py-0.5 rounded mt-2 inline-block'
+          : 'bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-200 text-sm font-medium px-2.5 py-0.5 rounded mt-2 inline-block';
+        readStatus.textContent = book.read ? 'Прочитано' : 'Не прочитано';
+
+        content.appendChild(title);
+        content.appendChild(author);
+        content.appendChild(tagsContainer);
+        content.appendChild(readStatus);
+        overlay.appendChild(content);
+        div.appendChild(img);
+        div.appendChild(overlay);
+        a.appendChild(div);
+
+        return a;
+      };
+
+      const loadPage = async (page) => {
+        if (state.loadedPages.has(page) || state.loading) return;
         
-        let url;
-        if (state.tag) {
-          url = `/api/books-by-tag/${encodeURIComponent(state.tag)}/${nextPage}.json`;
-        } else if (state.genre) {
-          url = `/api/books-by-genre/${encodeURIComponent(state.genre)}/${nextPage}.json`;
-        } else if (state.series) {
-          url = `/api/books-by-series/${encodeURIComponent(state.series)}/${nextPage}.json`;
-        } else if (state.isMainBooksPage) {
-          url = `/api/books/${nextPage}.json`;
-        }
-        
-        if (!url) {
-          return;
-        }
-        
-        console.log('Fetching URL:', url);
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        console.log('Received books:', data.books?.length);
-        
-        if (data.books && data.books.length > 0) {
-          const grid = document.getElementById('books-grid-container');
-          const trigger = document.getElementById('infinite-scroll-trigger');
-          
-          if (grid) {
-            // Get all placeholders
-            const placeholders = grid.querySelectorAll('.placeholder-card');
+        state.loading = true;
+
+        try {
+          let url;
+          if (state.tag) {
+            url = `/api/books-by-tag/${encodeURIComponent(state.tag)}/${page}.json`;
+          } else if (state.genre) {
+            url = `/api/books-by-genre/${encodeURIComponent(state.genre)}/${page}.json`;
+          } else if (state.series) {
+            url = `/api/books-by-series/${encodeURIComponent(state.series)}/${page}.json`;
+          } else if (state.isMainBooksPage) {
+            url = `/api/books/${page}.json`;
+          }
+
+          if (!url) return;
+
+          const response = await fetch(url);
+          const data = await response.json();
+
+          if (data.books && data.books.length > 0) {
+            const grid = document.getElementById('books-grid-container');
+            if (!grid) return;
+
+            const placeholders = grid.querySelectorAll(`.book-placeholder[data-page="${page}"]`);
             
             data.books.forEach((book, index) => {
-              const bookCard = createBookCard(book);
-              
-              // Replace the first placeholder with the actual book card
               if (placeholders[index]) {
+                const bookCard = createBookCard(book, page);
                 placeholders[index].replaceWith(bookCard);
-              } else {
-                // If no placeholder, insert before trigger
-                if (trigger) {
-                  grid.insertBefore(bookCard, trigger);
-                } else {
-                  grid.appendChild(bookCard);
-                }
               }
             });
+
+            state.loadedPages.add(page);
             
-            state.currentLoadedCount += data.books.length;
-            state.loadedPages.add(nextPage);
-            console.log('Updated loaded count to:', state.currentLoadedCount);
-            updateProgressIndicator();
-            
-            // Update virtual pages to create new placeholders and observe the first one
-            updateVirtualPages();
-            
-            // Attach click handlers to new book links
-            const newBookLinks = grid.querySelectorAll('a[href^="/books/"]:not([data-handler-attached])');
-            newBookLinks.forEach(link => {
-              link.dataset.handlerAttached = 'true';
-              link.addEventListener('click', (e) => {
-                const state = window.infiniteScrollState;
-                if (state) {
-                  sessionStorage.setItem('scrollPage', state.currentPage.toString());
-                  sessionStorage.setItem('scrollPosition', window.scrollY.toString());
-                  sessionStorage.setItem('loadedPages', JSON.stringify([...state.loadedPages]));
-                }
-              });
-            });
+            // Attach click handlers to newly loaded books
+            attachBookClickHandlers();
           }
+        } catch (error) {
+          console.error('Error loading page:', page, error);
+        } finally {
+          state.loading = false;
         }
-      } catch (error) {
-        console.error('Error loading more books:', error);
-      } finally {
-        state.loading = false;
-        const spinner = document.getElementById('loading-spinner');
-        if (spinner) spinner.classList.add('hidden');
-      }
-    };
-    
-    // Only initialize observer once
-    if (!window.infiniteScrollObserver) {
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          const state = window.infiniteScrollState;
-          if (state && entry.isIntersecting && !state.loading && state.currentLoadedCount < state.totalCount) {
-            console.log('Placeholder visible, loading more books...');
-            // Unobserve this placeholder since we're loading now
-            observer.unobserve(entry.target);
-            loadMoreBooks();
+      };
+
+      const setupIntersectionObserver = () => {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const placeholder = entry.target;
+              const page = parseInt(placeholder.dataset.page);
+              if (!isNaN(page)) {
+                loadPage(page);
+              }
+            }
+          });
+        }, {
+          rootMargin: '800px',
+          threshold: 0.01
+        });
+
+        const placeholders = document.querySelectorAll('.book-placeholder');
+        const pageGroups = {};
+        
+        // Group placeholders by page
+        placeholders.forEach(placeholder => {
+          const page = parseInt(placeholder.dataset.page);
+          if (!pageGroups[page]) {
+            pageGroups[page] = [];
+          }
+          pageGroups[page].push(placeholder);
+        });
+        
+        // Observe first and last placeholder of each page
+        const visiblePages = new Set();
+        Object.keys(pageGroups).forEach(page => {
+          const group = pageGroups[page];
+          if (group.length > 0) {
+            observer.observe(group[0]); // First placeholder
+            if (group.length > 1) {
+              observer.observe(group[group.length - 1]); // Last placeholder
+            }
+            
+            // Check if any placeholders are initially visible
+            group.forEach(placeholder => {
+              const rect = placeholder.getBoundingClientRect();
+              if (rect.top < window.innerHeight && rect.bottom > 0) {
+                visiblePages.add(parseInt(page));
+              }
+            });
           }
         });
-      }, { 
-        threshold: 0.1,
-        rootMargin: '200px' // Start loading 200px before placeholder is visible
-      });
-      
-      window.infiniteScrollObserver = observer;
-      
-      // Observe the first placeholder initially
-      const grid = document.getElementById('books-grid-container');
-      if (grid) {
-        const firstPlaceholder = grid.querySelector('.placeholder-card');
-        if (firstPlaceholder) {
-          firstPlaceholder.classList.add('observe-me');
-          observer.observe(firstPlaceholder);
-          console.log('Initial observation of first placeholder');
+        
+        // Load initially visible pages
+        visiblePages.forEach(page => {
+          if (!state.loadedPages.has(page)) {
+            loadPage(page);
+          }
+        });
+
+        state.observer = observer;
+      };
+
+      const updateURL = () => {
+        const grid = document.getElementById('books-grid-container');
+        if (!grid) return;
+
+        const viewportMiddle = window.scrollY + window.innerHeight / 2;
+        
+        // Check both book cards and placeholders to determine page
+        const allItems = grid.querySelectorAll('.book-card, .book-placeholder');
+        
+        let detectedPage = currentPage; // Use initial page from props
+        
+        allItems.forEach(item => {
+          const rect = item.getBoundingClientRect();
+          const itemTop = rect.top + window.scrollY;
+          
+          if (itemTop < viewportMiddle) {
+            const page = parseInt(item.dataset.page);
+            if (!isNaN(page)) {
+              detectedPage = page;
+            }
+          }
+        });
+
+        if (detectedPage !== state.currentPage) {
+          state.currentPage = detectedPage;
+          
+          const basePath = state.isMainBooksPage ? '/books' :
+                          state.tag ? `/tags/${state.tag}` :
+                          state.genre ? `/genres/${state.genre}` :
+                          state.series ? `/series/${state.series}` : '/books';
+          
+          history.replaceState(null, '', `${basePath}/${detectedPage}/`);
+          
+          const progressText = document.getElementById('progress-text');
+          if (progressText) {
+            progressText.textContent = `Page ${detectedPage} / ${state.totalPages}`;
+          }
         }
-      }
-      
-      // Initialize scroll progress indicator and hash updates
+      };
+
+      const attachBookClickHandlers = () => {
+        const bookLinks = document.querySelectorAll('.book-card');
+        bookLinks.forEach(link => {
+          if (!link.dataset.handlerAttached) {
+            link.dataset.handlerAttached = 'true';
+            link.addEventListener('click', () => {
+              // Force immediate URL update to capture current position
+              updateURL();
+              sessionStorage.setItem('scrollPage', state.currentPage.toString());
+              sessionStorage.setItem('scrollPosition', window.scrollY.toString());
+            });
+          }
+        });
+      };
+
       let scrollTimeout;
       window.addEventListener('scroll', () => {
-        updateProgressIndicator();
-        
-        // Throttle hash updates
         clearTimeout(scrollTimeout);
-        scrollTimeout = setTimeout(updateScrollHash, 200);
+        scrollTimeout = setTimeout(updateURL, 50);
       });
-      updateProgressIndicator();
-      
-      // Restore scroll position when coming back from a book page
-      const restoreScrollPosition = async () => {
-        const savedPage = sessionStorage.getItem('scrollPage');
-        const savedPosition = sessionStorage.getItem('scrollPosition');
-        const savedLoadedPages = sessionStorage.getItem('loadedPages');
-        
-        if (savedPage && savedPosition) {
-          const targetPage = parseInt(savedPage);
-          const targetPosition = parseInt(savedPosition);
-          const loadedPages = savedLoadedPages ? JSON.parse(savedLoadedPages) : [1];
-          
-          console.log('Restoring to page:', targetPage, 'position:', targetPosition);
-          
-          // Clear saved data
-          sessionStorage.removeItem('scrollPage');
-          sessionStorage.removeItem('scrollPosition');
-          sessionStorage.removeItem('loadedPages');
-          
-          // Load all pages up to the target page
-          const state = window.infiniteScrollState;
-          if (!state) return;
-          
-          const pagesToLoad = [];
-          for (let page = 2; page <= targetPage; page++) {
-            if (!state.loadedPages.has(page)) {
-              pagesToLoad.push(page);
-            }
-          }
-          
-          if (pagesToLoad.length > 0) {
-            state.loading = true;
-            const spinner = document.getElementById('loading-spinner');
-            if (spinner) spinner.classList.remove('hidden');
-            
-            try {
-              for (const page of pagesToLoad) {
-                let url;
-                if (state.tag) {
-                  url = `/api/books-by-tag/${encodeURIComponent(state.tag)}/${page}.json`;
-                } else if (state.genre) {
-                  url = `/api/books-by-genre/${encodeURIComponent(state.genre)}/${page}.json`;
-                } else if (state.series) {
-                  url = `/api/books-by-series/${encodeURIComponent(state.series)}/${page}.json`;
-                } else if (state.isMainBooksPage) {
-                  url = `/api/books/${page}.json`;
-                }
-                
-                if (url) {
-                  const response = await fetch(url);
-                  const data = await response.json();
-                  
-                  if (data.books && data.books.length > 0) {
-                    const grid = document.getElementById('books-grid-container');
-                    const trigger = document.getElementById('infinite-scroll-trigger');
-                    
-                    if (grid) {
-                      // Get all placeholders
-                      const placeholders = grid.querySelectorAll('.placeholder-card');
-                      
-                      data.books.forEach((book, index) => {
-                        const bookCard = createBookCard(book);
-                        
-                        // Replace the first placeholder with the actual book card
-                        if (placeholders[index]) {
-                          placeholders[index].replaceWith(bookCard);
-                        } else {
-                          // If no placeholder, insert before trigger
-                          if (trigger) {
-                            grid.insertBefore(bookCard, trigger);
-                          } else {
-                            grid.appendChild(bookCard);
-                          }
-                        }
-                      });
-                      
-                      state.currentLoadedCount += data.books.length;
-                      state.loadedPages.add(page);
-                    }
-                  }
-                }
-              }
-              
-              // Update virtual pages to remove placeholders for loaded content
-              updateVirtualPages();
-              
-              // Wait for images to load before scrolling
-              setTimeout(() => {
-                window.scrollTo(0, targetPosition);
-                
-                // Re-attach click handlers to newly added links
-                const bookLinks = document.querySelectorAll('a[href^="/books/"]');
-                bookLinks.forEach(link => {
-                  if (!link.dataset.handlerAttached) {
-                    link.dataset.handlerAttached = 'true';
-                    link.addEventListener('click', (e) => {
-                      const state = window.infiniteScrollState;
-                      if (state) {
-                        sessionStorage.setItem('scrollPage', state.currentPage.toString());
-                        sessionStorage.setItem('scrollPosition', window.scrollY.toString());
-                        sessionStorage.setItem('loadedPages', JSON.stringify([...state.loadedPages]));
-                      }
-                    });
-                  }
-                });
-              }, 300);
-              
-            } catch (error) {
-              console.error('Error restoring scroll position:', error);
-            } finally {
-              state.loading = false;
-              const spinner = document.getElementById('loading-spinner');
-              if (spinner) spinner.classList.add('hidden');
-            }
-          } else {
-            // Pages already loaded, just scroll
-            setTimeout(() => {
-              window.scrollTo(0, targetPosition);
-            }, 100);
-          }
-        }
-      };
-      
-      // Check for hash in URL on page load
-      const checkUrlHash = () => {
-        const hash = window.location.hash;
-        if (hash && hash.startsWith('#page=')) {
-          const page = parseInt(hash.split('=')[1]);
-          if (page > 1) {
-            // Estimate scroll position based on page
-            const estimatedPosition = (page - 1) * window.innerHeight * 2;
-            sessionStorage.setItem('scrollPage', page.toString());
-            sessionStorage.setItem('scrollPosition', estimatedPosition.toString());
-            restoreScrollPosition();
-          }
-        } else {
-          // Check if we're coming back from a book page
-          restoreScrollPosition();
-        }
-      };
-      
-      // Run on page load
-      setTimeout(checkUrlHash, 100);
+
+      removePaginationNav();
+      scrollToPageStart();
+      setupIntersectionObserver();
+      attachBookClickHandlers();
     }
   </script>
 )}

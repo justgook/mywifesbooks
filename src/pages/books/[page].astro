@@ -1,0 +1,56 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BookGrid from '../../components/BookGrid.astro';
+
+export async function getStaticPaths() {
+  const pageSize = 12;
+  const allBooks = await getCollection('books');
+  const byDate = [];
+  
+  for (const i in allBooks) {
+    byDate.push({
+      date: new Date((await allBooks[i].render()).remarkPluginFrontmatter.lastModified),
+      data: allBooks[i],
+    });
+  }
+
+  let sortedBooks = byDate.sort((a, b) => {
+    return b.date.getTime() - a.date.getTime();
+  });
+  sortedBooks = sortedBooks.map(({data}) => data);
+
+  const totalPages = Math.ceil(sortedBooks.length / pageSize);
+
+  return Array.from({ length: totalPages }, (_, i) => {
+    const page = i + 1;
+    const offset = i * pageSize;
+    const paginatedBooks = sortedBooks.slice(offset, offset + pageSize);
+
+    return {
+      params: { page: page.toString() },
+      props: {
+        books: paginatedBooks,
+        currentPage: page,
+        totalPages: totalPages,
+        totalCount: sortedBooks.length,
+        pageSize: pageSize
+      }
+    };
+  });
+}
+
+const { books, currentPage, totalPages, totalCount, pageSize } = Astro.props;
+---
+
+<BaseLayout title={`All Books - Page ${currentPage} of ${totalPages}`}>
+  <BookGrid 
+    books={books} 
+    currentPage={currentPage} 
+    totalPages={totalPages}
+    totalCount={totalCount}
+    pageSize={pageSize}
+    enableVirtualScroll={true}
+    isMainBooksPage={true}
+  />
+</BaseLayout>

@@ -1,0 +1,55 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import BookGrid from '../../../components/BookGrid.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const pageSize = 12;
+  const allBooks = await getCollection('books');
+  
+  const tagsSet = new Set(allBooks.flatMap(book => book.data.tags));
+  tagsSet.delete("");
+  const tags = [...tagsSet];
+  
+  const paths = [];
+  
+  for (const tag of tags) {
+    const tagBooks = allBooks.filter(book => book.data.tags.includes(tag));
+    const totalPages = Math.ceil(tagBooks.length / pageSize);
+    
+    for (let page = 1; page <= totalPages; page++) {
+      const offset = (page - 1) * pageSize;
+      const paginatedBooks = tagBooks.slice(offset, offset + pageSize);
+      
+      paths.push({
+        params: { tag, page: page.toString() },
+        props: {
+          books: paginatedBooks,
+          currentPage: page,
+          totalPages: totalPages,
+          totalCount: tagBooks.length,
+          pageSize: pageSize,
+          tag: tag
+        }
+      });
+    }
+  }
+  
+  return paths;
+}
+
+const { books, currentPage, totalPages, totalCount, pageSize, tag } = Astro.props;
+---
+
+<BaseLayout title={`Тэг "${tag}" - Page ${currentPage} of ${totalPages}`}>
+  <h1 class="text-3xl font-bold mb-8">Тэг "{tag}"</h1>
+  <BookGrid 
+    books={books} 
+    currentPage={currentPage} 
+    totalPages={totalPages}
+    totalCount={totalCount}
+    pageSize={pageSize}
+    enableVirtualScroll={true}
+    tag={tag}
+  />
+</BaseLayout>

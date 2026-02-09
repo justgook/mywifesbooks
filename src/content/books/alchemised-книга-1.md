@@ -5,7 +5,7 @@ genre: Фэнтези
 series: Alchemised
 tags:
   - 18+
-  - фентези
+  - фэнтези
 image: /src/assets/img/alchemised-hb.webp
 have: true
 read: false

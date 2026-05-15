@@ -59,7 +59,7 @@ for (const author of authors) {
                 .toSorted((a: any,b: any)=>a.data.title.localeCompare(b.data.title, 'ru'))
                 .map((book: any) => (
                   <a
-                    href={`/books/${book.slug}`}
+                    href={`/books/${book.id}`}
                     class="block text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 mt-2 transition-colors duration-200"
                   >
                     {book.data.title}

@@ -1,25 +1,27 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import { Image } from 'astro:assets';
 import createSlug from "../../lib/createSlug";
 
 export async function getStaticPaths() {
   const books = await getCollection('books');
   return books.map(book => ({
-    params: { slug: book.slug },
+    params: { slug: book.id },
     props: { book }
   }));
 }
 
 const { slug } = Astro.params;
 const book = await getCollection('books').then(books =>
-  books.find(b => b.slug === slug)
+  books.find(b => b.id === slug)
 );
 
 if (!book) {
   return Astro.redirect('/404');
 }
+
+const { Content } = await render(book);
 ---
 
 <BaseLayout title={book.data.title}>
@@ -71,7 +73,7 @@ if (!book) {
         )}
 
         <div class="prose dark:prose-invert mt-8">
-          {book.body}
+          <Content />
         </div>
       </div>
     </div>

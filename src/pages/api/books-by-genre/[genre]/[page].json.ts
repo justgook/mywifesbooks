@@ -11,7 +11,7 @@ export async function getStaticPaths() {
   for (const genreEntry of genreBooks) {
     // Filter books by matching genre
     const filteredBooks = allBooks.filter(book => 
-      createSlug(book.data.genre) === genreEntry.slug
+      createSlug(book.data.genre) === genreEntry.id
     );
     
     const totalPages = Math.ceil(filteredBooks.length / pageSize);
@@ -22,10 +22,10 @@ export async function getStaticPaths() {
       const paginatedBooks = filteredBooks.slice(offset, offset + pageSize);
 
       paths.push({
-        params: { genre: genreEntry.slug, page: page.toString() },
+        params: { genre: genreEntry.id, page: page.toString() },
         props: {
           books: paginatedBooks.map(book => ({
-            slug: book.slug,
+            slug: book.id,
             ...book.data
           })),
           hasMore: page < totalPages,

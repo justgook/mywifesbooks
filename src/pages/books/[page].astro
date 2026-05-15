@@ -1,19 +1,17 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import BookGrid from '../../components/BookGrid.astro';
 
 export async function getStaticPaths() {
   const pageSize = 12;
   const allBooks = await getCollection('books');
-  const byDate = [];
-  
-  for (const i in allBooks) {
-    byDate.push({
-      date: new Date((await allBooks[i].render()).remarkPluginFrontmatter.lastModified),
-      data: allBooks[i],
-    });
-  }
+  const byDate = await Promise.all(
+    allBooks.map(async (book) => ({
+      date: new Date((await render(book)).remarkPluginFrontmatter.lastModified),
+      data: book,
+    }))
+  );
 
   let sortedBooks = byDate.sort((a, b) => {
     return b.date.getTime() - a.date.getTime();

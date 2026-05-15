@@ -1,11 +1,11 @@
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 
 export async function getStaticPaths() {
   const pageSize = 12;
   const allBooks = await getCollection('books');
   const byDate = await Promise.all(
     allBooks.map(async (book) => ({
-      date: new Date((await book.render()).remarkPluginFrontmatter.lastModified),
+      date: new Date((await render(book)).remarkPluginFrontmatter.lastModified),
       data: book,
     }))
   );
@@ -26,7 +26,7 @@ export async function getStaticPaths() {
       params: { page: page.toString() },
       props: {
         books: paginatedBooks.map(book => ({
-          slug: book.slug,
+          slug: book.id,
           ...book.data
         })),
         hasMore: page < totalPages,

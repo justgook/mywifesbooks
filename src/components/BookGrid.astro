@@ -14,6 +14,8 @@ const {
   isMainBooksPage = false 
 } = Astro.props;
 
+const getBookSlug = (book: any) => book.slug ?? book.id;
+
 const placeholdersBefore = (currentPage - 1) * pageSize;
 const booksAfter = totalCount - (currentPage * pageSize);
 const placeholdersAfter = Math.max(0, booksAfter);
@@ -43,7 +45,7 @@ const placeholdersAfter = Math.max(0, booksAfter);
     <div id="page-start" class="col-span-full h-0" style="scroll-margin-top: 0;"></div>
     
     {books.length > 0 ? books.map((book) => (
-      <a href={`/books/${book.slug}`} class="block group relative book-card" data-page={currentPage}>
+      <a href={`/books/${getBookSlug(book)}`} class="block group relative book-card" data-page={currentPage}>
         <div class="aspect-[1/1.4] relative overflow-hidden">
           <Image
             src={book.data.image}

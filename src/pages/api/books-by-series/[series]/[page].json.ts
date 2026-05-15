@@ -36,7 +36,7 @@ export async function getStaticPaths() {
         params: { series: seriesSlug, page: page.toString() },
         props: {
           books: paginatedBooks.map(book => ({
-            slug: book.slug,
+            slug: book.id,
             ...book.data
           })),
           hasMore: page < totalPages,
